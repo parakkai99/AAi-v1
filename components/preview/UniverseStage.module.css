@@ -24,8 +24,8 @@
 .universeFieldContainer {
   position: relative;
   width: 100%;
-  max-width: 1280px;
-  height: 540px;
+  max-width: 1320px;
+  height: 600px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -36,13 +36,13 @@
 
 @media (min-width: 1024px) {
   .universeFieldContainer {
-    height: 620px;
+    height: 700px;
   }
 }
 
 @media (max-width: 640px) {
   .universeFieldContainer {
-    height: 500px;
+    height: 520px;
   }
 }
 
@@ -50,11 +50,11 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 680px;
-  height: 380px;
+  width: 840px;
+  height: 500px;
   transform: translate(-50%, -50%);
   background: radial-gradient(ellipse at center, rgba(0, 227, 253, 0.15) 0%, rgba(118, 182, 255, 0.06) 45%, rgba(5, 20, 36, 0) 75%);
-  filter: blur(50px);
+  filter: blur(55px);
   pointer-events: none;
 }
 
@@ -62,11 +62,11 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 850px;
-  height: 480px;
+  width: 980px;
+  height: 580px;
   transform: translate(-50%, -50%) rotate(-12deg);
   background: radial-gradient(ellipse at center, rgba(147, 51, 234, 0.08) 0%, rgba(0, 227, 253, 0.05) 50%, transparent 75%);
-  filter: blur(60px);
+  filter: blur(65px);
   pointer-events: none;
   animation: slowPulse 8s ease-in-out infinite alternate;
 }

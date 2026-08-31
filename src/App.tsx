@@ -5,8 +5,12 @@
 
 import React from 'react';
 import PreviewPage from '@/app/preview/page';
+import { ArchitectAnyProvider } from '@/src/context/ArchitectAnyContext';
 
 export default function App() {
-  return <PreviewPage />;
+  return (
+    <ArchitectAnyProvider>
+      <PreviewPage />
+    </ArchitectAnyProvider>
+  );
 }
-

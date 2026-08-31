@@ -1,5 +1,6 @@
 import React from 'react';
 import { Domain } from '@/src/types';
+import { useArchitectAny } from '@/src/context/ArchitectAnyContext';
 import {
   ShoppingCart,
   MapPin,
@@ -62,6 +63,7 @@ export const DomainNode: React.FC<DomainNodeProps> = ({
   onSelect,
   onHover,
 }) => {
+  const { getDomainName, t } = useArchitectAny();
   const IconComponent = ICON_MAP[domain.icon] || Cpu;
   const color = domain.visual?.color || '#00e3fd';
   const glowColor = domain.visual?.glowColor || `${color}66`;
@@ -69,6 +71,8 @@ export const DomainNode: React.FC<DomainNodeProps> = ({
   const isSubdued = isAnyHovered && !isHovered && !isSelected;
   const effectiveScale = isSelected ? 1.22 : isHovered ? 1.18 : depthScale;
   const effectiveOpacity = isSubdued ? 0.32 : isSelected ? 1 : isHovered ? 1 : depthOpacity;
+
+  const displayName = getDomainName(domain.id, domain.name);
 
   return (
     <div
@@ -100,12 +104,12 @@ export const DomainNode: React.FC<DomainNodeProps> = ({
       <div className="flex flex-col items-center group">
         {/* Domain ID Pill */}
         <div
-          className={`font-mono text-[9px] sm:text-[10px] tracking-widest uppercase transition-all duration-300 mb-1 px-1.5 py-0.5 rounded-sm ${
+          className={`font-mono text-[10px] sm:text-[11px] tracking-wider uppercase transition-all duration-300 mb-1.5 px-2 py-0.5 rounded ${
             isSelected
-              ? 'text-white bg-white/25 shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-100 font-bold'
+              ? 'text-white bg-[#00e3fd]/40 border border-[#00e3fd] shadow-[0_0_12px_rgba(0,227,253,0.6)] opacity-100 font-black'
               : isHovered
-              ? 'text-white bg-white/15 opacity-100'
-              : 'text-[#8f9095] opacity-75 group-hover:opacity-100'
+              ? 'text-white bg-white/20 border border-white/40 opacity-100 font-bold'
+              : 'text-[#9eb1be] bg-[#021425]/60 border border-[#00dfff]/20 opacity-85 group-hover:opacity-100'
           }`}
         >
           {domain.id}
@@ -115,11 +119,11 @@ export const DomainNode: React.FC<DomainNodeProps> = ({
         <div className="relative flex items-center justify-center">
           {/* Outer Atmosphere Glow Disc */}
           <div
-            className={`absolute -inset-3.5 rounded-full blur-xl transition-all duration-500 pointer-events-none ${
+            className={`absolute -inset-4 rounded-full blur-xl transition-all duration-500 pointer-events-none ${
               isSelected
-                ? 'opacity-95 scale-130'
+                ? 'opacity-95 scale-135'
                 : isHovered
-                ? 'opacity-85 scale-120'
+                ? 'opacity-85 scale-125'
                 : 'opacity-40 scale-100 group-hover:opacity-75'
             }`}
             style={{ backgroundColor: color }}
@@ -127,7 +131,7 @@ export const DomainNode: React.FC<DomainNodeProps> = ({
 
           {/* Under-node Elliptical Surface Shadow & Orbit Footprint */}
           <div
-            className="absolute -bottom-2 w-12 h-3.5 rounded-full blur-sm transition-opacity duration-300 pointer-events-none"
+            className="absolute -bottom-2.5 w-14 h-4 rounded-full blur-sm transition-opacity duration-300 pointer-events-none"
             style={{
               backgroundColor: color,
               opacity: isSelected ? 0.85 : isHovered ? 0.65 : 0.28,
@@ -136,24 +140,24 @@ export const DomainNode: React.FC<DomainNodeProps> = ({
 
           {/* Nucleus Disc */}
           <div
-            className={`relative w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center backdrop-blur-md transition-all duration-300 ${
+            className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center backdrop-blur-md transition-all duration-300 ${
               isSelected
-                ? 'border-2 border-white ring-2 ring-offset-2 ring-offset-[#051424] shadow-[0_0_30px_#00e3fd]'
-                : 'border border-white/20 group-hover:border-white/70'
+                ? 'border-2 border-white ring-2 ring-offset-2 ring-offset-[#051424] shadow-[0_0_35px_#00e3fd]'
+                : 'border border-white/30 group-hover:border-white/80'
             }`}
             style={{
-              backgroundColor: 'rgba(5, 20, 36, 0.88)',
+              backgroundColor: 'rgba(3, 18, 33, 0.92)',
               boxShadow: isSelected
-                ? `0 0 30px ${color}, inset 0 0 15px ${glowColor}`
+                ? `0 0 35px ${color}, inset 0 0 18px ${glowColor}`
                 : isHovered
-                ? `0 0 22px ${color}, inset 0 0 12px ${glowColor}`
-                : `0 0 12px ${glowColor}`,
+                ? `0 0 25px ${color}, inset 0 0 14px ${glowColor}`
+                : `0 0 14px ${glowColor}`,
               color: color,
             }}
           >
             {/* Glowing Icon */}
             <IconComponent
-              className={`w-5 h-5 transition-transform duration-300 ${
+              className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 ${
                 isHovered || isSelected ? 'scale-110' : 'scale-100'
               }`}
               style={{ color: isSelected ? '#ffffff' : color }}
@@ -169,22 +173,22 @@ export const DomainNode: React.FC<DomainNodeProps> = ({
           </div>
         </div>
 
-        {/* Domain Name Label */}
-        <div className="text-center w-28 sm:w-36 mt-1.5 transition-all duration-300 pointer-events-none">
+        {/* Domain Name Label (Enlarged & High-Contrast) */}
+        <div className="text-center w-36 sm:w-44 mt-2 transition-all duration-300 pointer-events-none">
           <p
-            className={`font-sans text-[11px] sm:text-[12px] leading-tight font-medium tracking-tight truncate transition-colors ${
+            className={`font-sans text-xs sm:text-[13px] md:text-sm leading-snug font-bold tracking-tight transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] ${
               isSelected
-                ? 'text-white font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.7)]'
+                ? 'text-white font-extrabold drop-shadow-[0_0_12px_rgba(0,227,253,0.8)] scale-105'
                 : isHovered
-                ? 'text-white font-semibold drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]'
-                : 'text-[#c3c6cf] group-hover:text-white'
+                ? 'text-[#f0f9ff] font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.6)]'
+                : 'text-[#d6e7f2] group-hover:text-white'
             }`}
           >
-            {domain.name}
+            {displayName}
           </p>
           {isSelected && (
-            <span className="inline-block mt-0.5 text-[9px] font-mono tracking-wider text-[#00e3fd] uppercase font-semibold">
-              Active Vector
+            <span className="inline-block mt-0.5 text-[9.5px] sm:text-[10px] font-mono tracking-wider text-[#00e3fd] uppercase font-bold bg-[#00e3fd]/10 border border-[#00e3fd]/30 px-1.5 py-0.5 rounded">
+              {t('active_vector')}
             </span>
           )}
         </div>

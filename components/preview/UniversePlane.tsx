@@ -32,7 +32,7 @@ export const UniversePlane: React.FC<UniversePlaneProps> = ({
     // Scene, Camera, Renderer
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 1000);
-    camera.position.set(0, 10, 16);
+    camera.position.set(0, 11.5, 18);
     camera.lookAt(0, 0, 0);
 
     const renderer = new THREE.WebGLRenderer({
@@ -52,10 +52,10 @@ export const UniversePlane: React.FC<UniversePlaneProps> = ({
     pointLight.position.set(0, 2.5, 0);
     scene.add(pointLight);
 
-    // Ellipse Orbit Lines in 3D (aligned with galaxy tilt)
+    // Ellipse Orbit Lines in 3D (expanded height and width for spacious galaxy gap)
     // Primary Outer Ellipse
-    const outerCurve = new THREE.EllipseCurve(0, 0, 11.2, 5.8, 0, 2 * Math.PI, false, 0);
-    const outerPoints = outerCurve.getPoints(160);
+    const outerCurve = new THREE.EllipseCurve(0, 0, 14.2, 8.4, 0, 2 * Math.PI, false, 0);
+    const outerPoints = outerCurve.getPoints(180);
     const outerGeo = new THREE.BufferGeometry().setFromPoints(
       outerPoints.map((p) => new THREE.Vector3(p.x, 0, p.y))
     );
@@ -68,8 +68,8 @@ export const UniversePlane: React.FC<UniversePlaneProps> = ({
     scene.add(outerLine);
 
     // Secondary Inner Ellipse
-    const innerCurve = new THREE.EllipseCurve(0, 0, 8.0, 4.2, 0, 2 * Math.PI, false, 0);
-    const innerPoints = innerCurve.getPoints(120);
+    const innerCurve = new THREE.EllipseCurve(0, 0, 10.4, 5.8, 0, 2 * Math.PI, false, 0);
+    const innerPoints = innerCurve.getPoints(140);
     const innerGeo = new THREE.BufferGeometry().setFromPoints(
       innerPoints.map((p) => new THREE.Vector3(p.x, 0, p.y))
     );
@@ -85,7 +85,7 @@ export const UniversePlane: React.FC<UniversePlaneProps> = ({
     scene.add(innerLine);
 
     // 3D Spiral Galaxy Particle System (Galaxy Arms + Bulge + Halo Dust)
-    const galaxyParticleCount = 650;
+    const galaxyParticleCount = 700;
     const particleGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(galaxyParticleCount * 3);
     const colors = new Float32Array(galaxyParticleCount * 3);
@@ -112,20 +112,20 @@ export const UniversePlane: React.FC<UniversePlaneProps> = ({
         // Spiral Arms
         const armIndex = i % 2; // 2 spiral arms
         const armOffset = armIndex * Math.PI;
-        const distance = 2.5 + Math.random() * 9.5;
+        const distance = 3.0 + Math.random() * 11.5;
         const spinAngle = distance * 0.65;
         const angle = spinAngle + armOffset + (Math.random() - 0.5) * 0.45;
 
-        // Elliptical galaxy projection (1.4x width, 0.72x depth)
-        const spreadX = (Math.random() - 0.5) * (distance * 0.15);
-        const spreadZ = (Math.random() - 0.5) * (distance * 0.12);
+        // Elliptical galaxy projection (1.4x width, 0.78x depth)
+        const spreadX = (Math.random() - 0.5) * (distance * 0.16);
+        const spreadZ = (Math.random() - 0.5) * (distance * 0.14);
 
-        positions[i * 3] = Math.cos(angle) * distance * 1.35 + spreadX;
+        positions[i * 3] = Math.cos(angle) * distance * 1.38 + spreadX;
         positions[i * 3 + 1] = (Math.random() - 0.5) * 1.4 * Math.exp(-distance * 0.15);
-        positions[i * 3 + 2] = Math.sin(angle) * distance * 0.72 + spreadZ;
+        positions[i * 3 + 2] = Math.sin(angle) * distance * 0.78 + spreadZ;
 
         // Gradient color from cyan to violet
-        const t = Math.min(1, distance / 11);
+        const t = Math.min(1, distance / 14);
         const col = t < 0.5 ? colorCore.clone().lerp(colorMid, t * 2) : colorMid.clone().lerp(colorOuter, (t - 0.5) * 2);
         colors[i * 3] = col.r;
         colors[i * 3 + 1] = col.g;
@@ -160,7 +160,7 @@ export const UniversePlane: React.FC<UniversePlaneProps> = ({
     scene.add(coreDisc);
 
     // Outer faint galaxy perimeter ring
-    const haloRingGeo = new THREE.RingGeometry(11.0, 11.4, 64);
+    const haloRingGeo = new THREE.RingGeometry(13.8, 14.4, 64);
     const haloRingMat = new THREE.MeshBasicMaterial({
       color: 0x00e3fd,
       transparent: true,

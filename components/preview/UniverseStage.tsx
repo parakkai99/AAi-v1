@@ -14,22 +14,39 @@ import styles from './UniverseStage.module.css';
 export interface UniverseStageProps {
   initialDomainId?: string;
   onDomainSelect?: (domain: Domain) => void;
+  onSelectSolution?: (solutionId: string) => void;
+  searchQuery?: string;
 }
 
 export const UniverseStage: React.FC<UniverseStageProps> = ({
   initialDomainId = 'D01',
   onDomainSelect,
+  onSelectSolution,
+  searchQuery = '',
 }) => {
-  const domains: Domain[] = domainsData as Domain[];
-  const subdomains: Subdomain[] = subdomainsData as Subdomain[];
-  const capabilities: SolutionCapability[] = capabilitiesData as SolutionCapability[];
-  const solutions: Solution[] = solutionsData as Solution[];
+  const allDomains: Domain[] = (domainsData as unknown as Domain[]) || [];
+  const subdomains: Subdomain[] = (subdomainsData as unknown as Subdomain[]) || [];
+  const capabilities: SolutionCapability[] = (capabilitiesData as unknown as SolutionCapability[]) || [];
+  const solutions: Solution[] = (solutionsData as unknown as Solution[]) || [];
+
+  const domains = useMemo(() => {
+    if (!searchQuery.trim()) return allDomains;
+    const q = searchQuery.toLowerCase();
+    const filtered = allDomains.filter(
+      (d) =>
+        d.name.toLowerCase().includes(q) ||
+        d.id.toLowerCase().includes(q) ||
+        (d.description && d.description.toLowerCase().includes(q)),
+    );
+    return filtered.length > 0 ? filtered : allDomains;
+  }, [allDomains, searchQuery]);
 
   // Selected & Hovered State
   const [selectedDomain, setSelectedDomain] = useState<Domain | null>(() => {
     return domains.find((d) => d.id === initialDomainId) || domains[0] || null;
   });
   const [hoveredDomain, setHoveredDomain] = useState<Domain | null>(null);
+  const solutionRailRef = useRef<HTMLDivElement>(null);
 
   // Galaxy Orbit Animation State
   const [isOrbiting, setIsOrbiting] = useState<boolean>(true);
@@ -64,9 +81,18 @@ export const UniverseStage: React.FC<UniverseStageProps> = ({
     };
   }, [isOrbiting, orbitSpeed]);
 
-  const handleSelectDomain = (domain: Domain) => {
+  const handleSelectDomain = (domain: Domain, shouldScroll: boolean = true) => {
     setSelectedDomain(domain);
     onDomainSelect?.(domain);
+
+    if (shouldScroll) {
+      setTimeout(() => {
+        solutionRailRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }, 60);
+    }
   };
 
   // Mathematical Ellipse Parameters for Perfect 3D Galaxy Alignment
@@ -74,18 +100,18 @@ export const UniverseStage: React.FC<UniverseStageProps> = ({
   const orbitGeometry = useMemo(() => {
     if (layoutMode === 'single-oval') {
       return {
-        outerRx: 42.5, // 42.5% of container width
-        outerRy: 23.5, // 23.5% of container height (inclined 3D galaxy disc)
-        innerRx: 42.5,
-        innerRy: 23.5,
+        outerRx: 45.0, // 45.0% of container width (broad horizontal coverage)
+        outerRy: 33.5, // 33.5% of container height (expanded vertical gap from center Intent Core)
+        innerRx: 45.0,
+        innerRy: 33.5,
       };
     }
-    // Dual concentric galaxy rings
+    // Dual concentric galaxy rings / dual spiral
     return {
-      outerRx: 43.5,
-      outerRy: 24.5,
-      innerRx: 31.5,
-      innerRy: 17.5,
+      outerRx: 46.5,
+      outerRy: 35.0, // Expanded outer spiral height
+      innerRx: 33.5,
+      innerRy: 23.5, // Expanded inner spiral height
     };
   }, [layoutMode]);
 
@@ -254,10 +280,10 @@ export const UniverseStage: React.FC<UniverseStageProps> = ({
             </defs>
 
             {/* Galaxy Coordinate Radial Guides */}
-            <line x1="50" y1="50" x2="6" y2="50" stroke="rgba(0, 227, 253, 0.1)" strokeDasharray="1,2" />
-            <line x1="50" y1="50" x2="94" y2="50" stroke="rgba(0, 227, 253, 0.1)" strokeDasharray="1,2" />
-            <line x1="50" y1="50" x2="50" y2="16" stroke="rgba(0, 227, 253, 0.08)" strokeDasharray="1,2" />
-            <line x1="50" y1="50" x2="50" y2="84" stroke="rgba(0, 227, 253, 0.08)" strokeDasharray="1,2" />
+            <line x1="50" y1="50" x2="4" y2="50" stroke="rgba(0, 227, 253, 0.1)" strokeDasharray="1,2" />
+            <line x1="50" y1="50" x2="96" y2="50" stroke="rgba(0, 227, 253, 0.1)" strokeDasharray="1,2" />
+            <line x1="50" y1="50" x2="50" y2="9" stroke="rgba(0, 227, 253, 0.08)" strokeDasharray="1,2" />
+            <line x1="50" y1="50" x2="50" y2="91" stroke="rgba(0, 227, 253, 0.08)" strokeDasharray="1,2" />
 
             {/* Primary Galaxy Outer Orbit Ellipse (Exact Mathematical Alignment) */}
             <ellipse
@@ -363,14 +389,19 @@ export const UniverseStage: React.FC<UniverseStageProps> = ({
       </div>
 
       {/* 3. Bottom Dynamic Solution Rail */}
-      <div className="w-full pb-4 sm:pb-6 z-30 shrink-0">
+      <div ref={solutionRailRef} id="solution-rail" className="w-full pb-4 sm:pb-6 z-30 shrink-0 scroll-mt-20">
         <SolutionRail
+          domains={allDomains}
           selectedDomain={selectedDomain}
           subdomains={subdomains}
           capabilities={capabilities}
           solutions={solutions}
-          onComposeClick={() => {
-            console.log('Composing architecture for:', selectedDomain?.name);
+          onSelectDomain={(domId) => {
+            const d = allDomains.find((dm) => dm.id === domId);
+            if (d) handleSelectDomain(d, true);
+          }}
+          onSelectSolution={(solId) => {
+            onSelectSolution?.(solId);
           }}
         />
       </div>

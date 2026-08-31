@@ -1,172 +1,162 @@
 import React from 'react';
-import { Domain, Subdomain, SolutionCapability, Solution } from '@/src/types';
+import { Domain, Subdomain, Capability, Solution } from '@/src/types';
+import { useArchitectAny } from '@/src/context/ArchitectAnyContext';
 import {
-  Sparkles,
   Layers,
   Cpu,
   Boxes,
   ArrowRight,
-  CheckCircle2,
+  Sparkles,
+  ExternalLink,
+  ChevronRight,
 } from 'lucide-react';
 
 export interface SolutionRailProps {
+  domains: Domain[];
   selectedDomain: Domain | null;
   subdomains: Subdomain[];
-  capabilities: SolutionCapability[];
+  capabilities: Capability[];
   solutions: Solution[];
-  onComposeClick?: () => void;
+  onSelectDomain: (domainId: string) => void;
+  onSelectSolution: (solutionId: string) => void;
 }
 
 export const SolutionRail: React.FC<SolutionRailProps> = ({
+  domains,
   selectedDomain,
   subdomains,
   capabilities,
   solutions,
-  onComposeClick,
+  onSelectDomain,
+  onSelectSolution,
 }) => {
+  const { getDomainName, getDomainDesc, t } = useArchitectAny();
+
   if (!selectedDomain) return null;
 
-  const domainSubdomains = subdomains.filter(
-    (s) => s.domainId === selectedDomain.id
-  );
-  const domainCapabilities = capabilities.filter(
-    (c) => c.domainId === selectedDomain.id
-  );
+  const domainId = selectedDomain.id;
+  const domainSubdomains = subdomains.filter((s) => s.domainId === domainId);
   const domainSolutions = solutions.filter(
-    (s) => s.domainId === selectedDomain.id
+    (s) => s.domainIds && s.domainIds.includes(domainId),
   );
 
   const color = selectedDomain.visual?.color || '#00e3fd';
+  const translatedDomainName = getDomainName(selectedDomain.id, selectedDomain.name);
+  const translatedDomainDesc = getDomainDesc(selectedDomain.id, selectedDomain.description);
 
   return (
-    <div
+    <section
       role="region"
-      aria-label={`${selectedDomain.name} Solution Details`}
-      className="w-full max-w-5xl mx-auto px-4 sm:px-6 transition-all duration-500 ease-out"
+      aria-label="Solution Navigation Rail"
+      className="relative z-30 w-full max-w-6xl mx-auto px-4 sm:px-6 my-4 transition-all duration-400 ease-out"
     >
       <div
-        className="relative overflow-hidden rounded-2xl bg-[#051424]/90 backdrop-blur-2xl border border-white/10 p-5 sm:p-6 shadow-[0_10px_40px_rgba(0,0,0,0.6)]"
-        style={{
-          borderLeft: `4px solid ${color}`,
-        }}
+        key={selectedDomain.id}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#021425]/95 to-[#010a14]/95 border-2 border-[#00dfff]/40 p-4 sm:p-5 shadow-[0_15px_45px_rgba(0,0,0,0.7),0_0_35px_rgba(0,227,253,0.15)] backdrop-blur-xl animate-in fade-in zoom-in-[0.99] duration-200"
       >
-        {/* Subtle Ambient Background Gradient */}
-        <div
-          className="absolute -right-24 -top-24 w-80 h-80 rounded-full opacity-15 blur-3xl pointer-events-none"
-          style={{ backgroundColor: color }}
-        />
-
-        {/* Top Header Row */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-white/10">
-          <div className="flex items-start sm:items-center gap-3">
-            <span
-              className="px-2.5 py-1 rounded font-mono text-[11px] font-bold tracking-wider uppercase text-white shadow-sm"
+        {/* Top Header / Domain Switcher Strip */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-[#00dfff]/15">
+          <div className="flex items-center gap-3">
+            <div
+              className="px-2.5 py-1 rounded-lg font-mono text-xs font-black tracking-wider text-black shrink-0 shadow-[0_0_16px_rgba(0,227,253,0.6)] animate-pulse"
               style={{ backgroundColor: color }}
             >
               {selectedDomain.id}
-            </span>
+            </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white">
-                  {selectedDomain.name}
+                <h3 className="text-base sm:text-lg font-bold text-[#eaf7ff] tracking-tight">
+                  {translatedDomainName}
                 </h3>
-                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono text-[#00e3fd] bg-[#00e3fd]/10 px-2 py-0.5 rounded border border-[#00e3fd]/20">
-                  <Sparkles className="w-3 h-3" /> Universe Active
+                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#00dfff]/15 text-[#00e3fd] border border-[#00dfff]/40 font-bold flex items-center gap-1 shadow-[0_0_10px_rgba(0,227,253,0.25)]">
+                  <Sparkles className="w-3 h-3 text-[#00e3fd] animate-spin" /> {t('active_vector')}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-[#c3c6cf] mt-0.5 max-w-2xl leading-relaxed">
-                {selectedDomain.description}
+              <p className="text-xs text-[#82a5bb] line-clamp-1 max-w-xl">
+                {translatedDomainDesc}
               </p>
             </div>
           </div>
 
-          {/* Dynamic Metrics Counters */}
-          <div className="flex items-center gap-4 sm:gap-6 shrink-0 bg-white/5 px-4 py-2 rounded-xl border border-white/5">
-            <div className="text-center">
-              <span className="block text-base sm:text-lg font-bold font-mono text-white">
-                {String(domainSubdomains.length).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[#8f9095] flex items-center gap-1 justify-center">
-                <Layers className="w-2.5 h-2.5" /> Subdomains
-              </span>
+          {/* Metrics Pill */}
+          <div className="flex items-center gap-3 shrink-0 self-start md:self-auto bg-[#020d18] px-3 py-1.5 rounded-xl border border-[#00dfff]/15">
+            <div className="flex items-center gap-1.5 text-xs font-mono">
+              <Layers className="w-3 h-3 text-[#6e9bb3]" />
+              <span className="text-[#eaf7ff] font-bold">{domainSubdomains.length}</span>
+              <span className="text-[#6e9bb3] text-[10px]">{t('subdomains')}</span>
             </div>
-
-            <div className="h-7 w-px bg-white/10" />
-
-            <div className="text-center">
-              <span className="block text-base sm:text-lg font-bold font-mono text-[#00e3fd]">
-                {String(domainCapabilities.length).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[#8f9095] flex items-center gap-1 justify-center">
-                <Cpu className="w-2.5 h-2.5" /> Capabilities
-              </span>
-            </div>
-
-            <div className="h-7 w-px bg-white/10" />
-
-            <div className="text-center">
-              <span className="block text-base sm:text-lg font-bold font-mono text-[#ddb7ff]">
-                {String(domainSolutions.length).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[#8f9095] flex items-center gap-1 justify-center">
-                <Boxes className="w-2.5 h-2.5" /> Solutions
-              </span>
+            <div className="h-3 w-px bg-[#00dfff]/20" />
+            <div className="flex items-center gap-1.5 text-xs font-mono">
+              <Boxes className="w-3 h-3 text-[#00dfff]" />
+              <span className="text-[#00dfff] font-bold">{domainSolutions.length}</span>
+              <span className="text-[#6e9bb3] text-[10px]">{t('solutions')}</span>
             </div>
           </div>
         </div>
 
-        {/* Dynamic Solutions Track */}
-        <div className="mt-4 pt-1 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex-1 w-full overflow-hidden">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#8f9095]">
-                Composed Solutions & Services:
-              </span>
-            </div>
-
-            {/* Horizontal Scrollable/Flowing Solution Nodes */}
-            <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
-              {domainSolutions.map((sol) => (
-                <div
-                  key={sol.id}
-                  className="group shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all cursor-pointer"
-                >
-                  <CheckCircle2
-                    className="w-3.5 h-3.5"
-                    style={{ color: color }}
-                  />
-                  <span className="text-xs font-medium text-[#d4e4fa] group-hover:text-white transition-colors">
-                    {sol.name}
-                  </span>
-                  <span className="text-[9px] font-mono text-[#8f9095] bg-black/30 px-1.5 py-0.5 rounded">
-                    {sol.type}
-                  </span>
-                </div>
-              ))}
-
-              {domainSolutions.length === 0 && (
-                <div className="text-xs text-[#8f9095] italic">
-                  No registered standalone solutions mapped yet.
-                </div>
-              )}
-            </div>
+        {/* Solutions Track: Single-Click Navigation to Solution Detail */}
+        <div className="pt-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[#6e9bb3] font-semibold">
+              {t('solutions_in_domain')}:
+            </span>
+            <span className="text-[10px] font-mono text-[#00dfff]">
+              {t('click_to_inspect')} →
+            </span>
           </div>
 
-          {/* Action Trigger */}
-          <div className="shrink-0 flex items-center gap-2 w-full sm:w-auto mt-2 md:mt-0">
-            <button
-              onClick={onComposeClick}
-              className="w-full sm:w-auto px-5 py-2 rounded-full font-mono text-xs font-semibold text-[#051424] transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-cyan-500/20 active:scale-95"
-              style={{
-                backgroundColor: color,
-              }}
-            >
-              <span>Compose Intent</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {domainSolutions.map((sol) => (
+              <button
+                key={sol.id}
+                onClick={() => onSelectSolution(sol.id)}
+                className="group flex items-center justify-between p-3 rounded-xl bg-[#03182b]/70 hover:bg-[#04243f] border border-[#00dfff]/20 hover:border-[#00e3fd] transition-all text-left cursor-pointer shadow-sm hover:shadow-[0_0_15px_rgba(0,227,253,0.25)] hover:scale-[1.01]"
+              >
+                <div className="flex flex-col min-w-0 pr-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10px] font-bold text-[#00dfff]">
+                      {sol.id}
+                    </span>
+                    <strong className="text-xs font-bold text-[#eaf7ff] group-hover:text-[#00e3fd] transition-colors truncate">
+                      {sol.name}
+                    </strong>
+                  </div>
+                  <span className="text-[10px] text-[#82a5bb] line-clamp-1 mt-0.5">
+                    {sol.description || `Architected for ${translatedDomainName}`}
+                  </span>
+                </div>
+                <div className="shrink-0 flex items-center gap-1 text-[10px] font-mono text-[#00dfff] bg-[#00dfff]/10 group-hover:bg-[#00dfff] group-hover:text-[#020914] px-2 py-1 rounded-md transition-all">
+                  <span>{t('explore')}</span>
+                  <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </button>
+            ))}
+
+            {domainSolutions.length === 0 && (
+              <div className="col-span-full py-4 text-center text-xs text-[#6e9bb3] font-mono bg-[#020d18]/50 rounded-xl border border-dashed border-[#00dfff]/15">
+                No dedicated standalone solutions in catalog for this domain yet. Subdomains are ready for custom composition.
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Subdomains Tag Cloud */}
+        {domainSubdomains.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-[#00dfff]/10 flex flex-wrap items-center gap-1.5">
+            <span className="text-[9px] font-mono uppercase tracking-wider text-[#55798c] mr-1">
+              {t('subdomains')}:
+            </span>
+            {domainSubdomains.map((sub) => (
+              <span
+                key={sub.id}
+                className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#02101e] border border-[#00dfff]/15 text-[#9bd5e8]"
+              >
+                {sub.name}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </section>
   );
 };
