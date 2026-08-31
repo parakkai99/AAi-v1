@@ -1,0 +1,57 @@
+[
+  { "id": "SD-01-01", "domainId": "D01", "name": "B2B Marketplace & Procurement", "description": "Enterprise supplier networks, RFQ engines, bulk order processing" },
+  { "id": "SD-01-02", "domainId": "D01", "name": "Multi-Vendor Consumer Platform", "description": "Storefront orchestration, unified catalog, cart & settlement" },
+  { "id": "SD-01-03", "domainId": "D01", "name": "Service & Gig Exchange", "description": "Time-based booking, skill verification, escrow milestones" },
+
+  { "id": "SD-02-01", "domainId": "D02", "name": "Hyperlocal Express Logistics", "description": "Sub-30 minute dispatch, geo-fenced batching, courier pooling" },
+  { "id": "SD-02-02", "domainId": "D02", "name": "Neighborhood Merchant Grid", "description": "Storefront digitization, local inventory sync, in-store pickup" },
+  { "id": "SD-02-03", "domainId": "D02", "name": "On-Demand Pro Services", "description": "Home maintenance, mobile technician dispatch, dynamic quotes" },
+
+  { "id": "SD-03-01", "domainId": "D03", "name": "Smart Ticketing & Access", "description": "Dynamic barcode validation, anti-scalp tokenization, VIP routing" },
+  { "id": "SD-03-02", "domainId": "D03", "name": "Venue Resource Management", "description": "Spatial seat mapping, stage scheduling, back-of-house operations" },
+  { "id": "SD-03-03", "domainId": "D03", "name": "Experiential Metaverse Hubs", "description": "Hybrid event broadcast, attendee networking, spatial audio zones" },
+
+  { "id": "SD-04-01", "domainId": "D04", "name": "Cloud Infrastructure & Edge", "description": "Multi-region failover, Kubernetes mesh, automated scale policies" },
+  { "id": "SD-04-02", "domainId": "D04", "name": "DevSecOps Pipeline Engine", "description": "Static code analysis, vulnerability gatekeeping, zero-trust deployment" },
+  { "id": "SD-04-03", "domainId": "D04", "name": "Identity & Access Mesh", "description": "Federated single sign-on, attribute-based policy, cryptographic auditing" },
+
+  { "id": "SD-05-01", "domainId": "D05", "name": "Autonomous Agent Swarms", "description": "Multi-agent coordination, goal planning, tool calling orchestration" },
+  { "id": "SD-05-02", "domainId": "D05", "name": "Vector Telemetry & Search", "description": "High-dimensional embeddings, semantic retrieval, real-time vector indexes" },
+  { "id": "SD-05-03", "domainId": "D05", "name": "Data Pipeline & Synthesis", "description": "Streaming ingestion, ETL automation, schema synthesis engines" },
+
+  { "id": "SD-06-01", "domainId": "D06", "name": "Capital EPC Delivery", "description": "Milestone Gantt trackers, structural bill of materials, contractor ledger" },
+  { "id": "SD-06-02", "domainId": "D06", "name": "BIM & Digital Twins", "description": "3D CAD integration, building sensor telemetry, clash detection" },
+  { "id": "SD-06-03", "domainId": "D06", "name": "Industrial Safety & Quality", "description": "Incident reporting, compliance checklists, AI vision hazard detection" },
+
+  { "id": "SD-07-01", "domainId": "D07", "name": "Precision Soil & Crop Telemetry", "description": "Moisture telemetry, drone hyperspectral imaging, nitrogen balance" },
+  { "id": "SD-07-02", "domainId": "D07", "name": "Agritech Commodity Supply", "description": "Grain elevator tracking, cold storage monitoring, farm-to-table traceability" },
+  { "id": "SD-07-03", "domainId": "D07", "name": "Automated Farm Equipment", "description": "Autonomous tractor telemetry, drone spray scheduling, yield optimization" },
+
+  { "id": "SD-08-01", "domainId": "D08", "name": "Adaptive Learning Management", "description": "Personalized skill graphs, pacing engines, modular course builders" },
+  { "id": "SD-08-02", "domainId": "D08", "name": "Institutional Certification", "description": "Verifiable digital credentials, proctored testing, regulatory transcript sync" },
+  { "id": "SD-08-03", "domainId": "D08", "name": "Interactive Simulation Labs", "description": "Browser sandbox environments, VR laboratory modules, peer collaboration" },
+
+  { "id": "SD-09-01", "domainId": "D09", "name": "Clinical EHR & Telehealth", "description": "HIPAA compliant video, electronic prescription, EHR interoperability" },
+  { "id": "SD-09-02", "domainId": "D09", "name": "Remote Patient Monitoring", "description": "Wearable sync, arrhythmia warning triggers, glucose trend forecasts" },
+  { "id": "SD-09-03", "domainId": "D09", "name": "Preventative Wellness & Diet", "description": "Biomarker scoring, personalized nutrition planning, active habit loops" },
+
+  { "id": "SD-10-01", "domainId": "D10", "name": "Core Banking & Multi-Currency", "description": "Double-entry ledger, sub-account trees, instant clearing protocols" },
+  { "id": "SD-10-02", "domainId": "D10", "name": "Treasury & Risk Management", "description": "Liquidity stress-testing, automated hedging, cashflow forecasting" },
+  { "id": "SD-10-03", "domainId": "D10", "name": "Fraud Detection & AML", "description": "Graph network anomaly detection, sanction list scraping, KYC automation" },
+
+  { "id": "SD-11-01", "domainId": "D11", "name": "Commercial Asset Leasing", "description": "Tenant portals, automated rent indexing, commercial lease workflows" },
+  { "id": "SD-11-02", "domainId": "D11", "name": "Smart Building Facility Ops", "description": "HVAC zone tuning, occupancy heatmaps, preventative asset maintenance" },
+  { "id": "SD-11-03", "domainId": "D11", "name": "Urban Infrastructure Mesh", "description": "Traffic signal coordination, public utility monitoring, civic asset registers" },
+
+  { "id": "SD-12-01", "domainId": "D12", "name": "Intelligent Route Optimization", "description": "Dynamic TSP dispatch, live traffic avoidance, fuel minimization" },
+  { "id": "SD-12-02", "domainId": "D12", "name": "Freight & Fleet Telematics", "description": "OBD-II CAN bus streaming, driver fatigue alerts, tire sensor sync" },
+  { "id": "SD-12-03", "domainId": "D12", "name": "Cold-Chain Integrity", "description": "Temperature data loggers, excursion alarms, automated bill of lading" },
+
+  { "id": "SD-13-01", "domainId": "D13", "name": "Smart Grid Energy Dispatch", "description": "Peak-shaving algorithmic dispatch, battery BESS automation, frequency stability" },
+  { "id": "SD-13-02", "domainId": "D13", "name": "Renewable Asset Telemetry", "description": "Solar inverter MPPT telemetry, wind turbine vibration analysis, farm yield" },
+  { "id": "SD-13-03", "domainId": "D13", "name": "Carbon Accounting & ESG", "description": "Scope 1-3 audit trails, carbon offset reconciliation, compliance reporting" },
+
+  { "id": "SD-14-01", "domainId": "D14", "name": "Ultra-Low Latency Streaming", "description": "WebRTC broadcast, adaptive bit-rate HLS, global edge caching" },
+  { "id": "SD-14-02", "domainId": "D14", "name": "Creator Royalty Engine", "description": "Smart contract splits, micro-tipping infrastructure, digital rights licensing" },
+  { "id": "SD-14-03", "domainId": "D14", "name": "Interactive Media & Gaming", "description": "Real-time state synchronization, matchmaking queues, spatial voice chat" }
+]
