@@ -6,7 +6,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import {
   IntentState,
-  LocationContextState,
+  NormalizedLocation,
   LanguageContextState,
   SUPPORTED_LANGUAGES,
   AuthSession,
@@ -16,9 +16,15 @@ import {
   ApiConfig,
   DEFAULT_API_CONFIG,
   MapProviderConfig,
+  LocationFilterCriteria,
+  MapMarkerData,
 } from '../types';
 import { intentService } from '../services/intentService';
-import { locationService, DEFAULT_LOCATION } from '../services/locationService';
+import {
+  locationService,
+  DEFAULT_NORMALIZED_LOCATION,
+  LocationVerificationResult,
+} from '../services/locationService';
 import { authService } from '../services/authService';
 import { t as translateKey, getTranslatedDomain } from '../services/translationService';
 
@@ -28,11 +34,18 @@ export interface ArchitectAnyContextValue {
   setIntent: (intent: Partial<IntentState>) => void;
   clearIntent: () => void;
 
-  // Location State
-  location: LocationContextState;
-  setLocation: (location: Partial<LocationContextState>) => void;
-  resolvePincode: (pincode: string) => Promise<void>;
+  // Global Location Intelligence State
+  location: NormalizedLocation;
+  radiusKm: number;
+  setLocation: (location: Partial<NormalizedLocation>) => void;
+  setRadiusKm: (radiusKm: number) => void;
+  resolveLocation: (query: string) => Promise<NormalizedLocation | null>;
+  resolvePincode: (pincode: string) => Promise<NormalizedLocation | null>;
+  resolvePincodePostOffices: (pincode: string) => Promise<NormalizedLocation[]>;
+  searchLocations: (query: string) => Promise<NormalizedLocation[]>;
+  verifyLocation: (name: string) => Promise<LocationVerificationResult>;
   detectLocation: () => Promise<void>;
+  queryServices: (criteria?: Partial<LocationFilterCriteria>) => Promise<MapMarkerData[]>;
 
   // Language State
   language: LanguageContextState;
@@ -63,7 +76,7 @@ const ArchitectAnyContext = createContext<ArchitectAnyContextValue | null>(null)
 export interface ArchitectAnyProviderProps {
   children: ReactNode;
   initialIntent?: Partial<IntentState>;
-  initialLocation?: Partial<LocationContextState>;
+  initialLocation?: Partial<NormalizedLocation>;
   initialLanguage?: LanguageContextState;
 }
 
@@ -79,11 +92,12 @@ export const ArchitectAnyProvider: React.FC<ArchitectAnyProviderProps> = ({
     ...initialIntent,
   }));
 
-  // 2. Location State
-  const [location, setLocationState] = useState<LocationContextState>(() => ({
+  // 2. Global Location State
+  const [location, setLocationState] = useState<NormalizedLocation>(() => ({
     ...locationService.getLocation(),
     ...initialLocation,
   }));
+  const [radiusKm, setRadiusKmState] = useState<number>(() => locationService.getRadiusKm());
 
   // 3. Language State (Default: en-IN)
   const [language, setLanguageState] = useState<LanguageContextState>(
@@ -106,6 +120,7 @@ export const ArchitectAnyProvider: React.FC<ArchitectAnyProviderProps> = ({
     });
     const unsubLocation = locationService.subscribe((newLoc) => {
       setLocationState(newLoc);
+      setRadiusKmState(newLoc.radiusKm || 25);
     });
     const unsubAuth = authService.subscribe((newAuth) => {
       setAuthState(newAuth);
@@ -136,19 +151,41 @@ export const ArchitectAnyProvider: React.FC<ArchitectAnyProviderProps> = ({
     });
   };
 
-  const handleSetLocation = (update: Partial<LocationContextState>) => {
+  const handleSetLocation = (update: Partial<NormalizedLocation>) => {
     locationService.setLocation(update);
   };
 
+  const handleSetRadiusKm = (radius: number) => {
+    locationService.setRadiusKm(radius);
+    setRadiusKmState(radius);
+  };
+
+  const handleResolveLocation = async (query: string) => {
+    return locationService.resolveLocationInput(query);
+  };
+
   const handleResolvePincode = async (pincode: string) => {
-    const res = await locationService.resolvePincode(pincode);
-    if (res) {
-      locationService.setLocation(res);
-    }
+    return locationService.resolvePincode(pincode);
+  };
+
+  const handleResolvePincodePostOffices = async (pincode: string) => {
+    return locationService.resolveAllPincodePostOffices(pincode);
+  };
+
+  const handleSearchLocations = async (query: string) => {
+    return locationService.searchLocations(query);
+  };
+
+  const handleVerifyLocation = async (name: string) => {
+    return locationService.verifyLocationByName(name);
   };
 
   const handleDetectLocation = async () => {
     await locationService.requestCurrentLocation();
+  };
+
+  const handleQueryServices = async (criteria: Partial<LocationFilterCriteria> = {}) => {
+    return locationService.queryServices(criteria);
   };
 
   const handleSetLanguage = (lang: LanguageContextState) => {
@@ -166,9 +203,16 @@ export const ArchitectAnyProvider: React.FC<ArchitectAnyProviderProps> = ({
     clearIntent: handleClearIntent,
 
     location,
+    radiusKm,
     setLocation: handleSetLocation,
+    setRadiusKm: handleSetRadiusKm,
+    resolveLocation: handleResolveLocation,
     resolvePincode: handleResolvePincode,
+    resolvePincodePostOffices: handleResolvePincodePostOffices,
+    searchLocations: handleSearchLocations,
+    verifyLocation: handleVerifyLocation,
     detectLocation: handleDetectLocation,
+    queryServices: handleQueryServices,
 
     language,
     setLanguage: handleSetLanguage,

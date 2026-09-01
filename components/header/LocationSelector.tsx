@@ -9,10 +9,11 @@ import {
   Map as MapIcon,
   Compass,
   Loader2,
+  X,
 } from 'lucide-react';
 import { useArchitectAny } from '@/src/context/ArchitectAnyContext';
 import { POPULAR_INDIAN_LOCATIONS } from '@/src/services/locationService';
-import { LocationResult } from '@/src/contracts/location';
+import { NormalizedLocation } from '@/src/contracts/location';
 
 export interface LocationSelectorProps {
   onOpenMapModal?: (prefillQuery?: string) => void;
@@ -23,12 +24,13 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
   onOpenMapModal,
   className = '',
 }) => {
-  const { location, setLocation, resolvePincode, detectLocation, mapConfig, t } = useArchitectAny();
+  const { location, setLocation, resolveLocation, resolvePincode, detectLocation, verifyLocation, mapConfig, t } = useArchitectAny();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [pincodeInput, setPincodeInput] = useState('');
   const [detecting, setDetecting] = useState(false);
   const [resolvingPin, setResolvingPin] = useState(false);
+  const [resolvingSearch, setResolvingSearch] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close popup when clicking outside
@@ -42,7 +44,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelectLocation = (loc: LocationResult) => {
+  const handleSelectLocation = (loc: NormalizedLocation) => {
     setLocation(loc);
     setIsOpen(false);
   };
@@ -71,6 +73,39 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
     }
   };
 
+  const handleSearchQuerySubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
+
+    setResolvingSearch(true);
+    try {
+      if (/^\d{6}$/.test(trimmed)) {
+        await resolvePincode(trimmed);
+        setSearchQuery('');
+        setIsOpen(false);
+      } else {
+        const ver = await verifyLocation(trimmed);
+        if (ver.verified && ver.candidates.length > 0) {
+          setLocation(ver.candidates[0]);
+          setSearchQuery('');
+          setIsOpen(false);
+        } else {
+          const res = await resolveLocation(trimmed);
+          if (res) {
+            setLocation(res);
+            setSearchQuery('');
+            setIsOpen(false);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Search query resolution failed:', err);
+    } finally {
+      setResolvingSearch(false);
+    }
+  };
+
   // Filtered popular locations
   const filteredLocations = POPULAR_INDIAN_LOCATIONS.filter((loc) => {
     if (!searchQuery.trim()) return true;
@@ -84,7 +119,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
   });
 
   const displayShort = location.city
-    ? `${location.city} · ${location.pincode || location.countryCode}`
+    ? `${location.city} · ${location.pincode || location.country || 'IN'}`
     : 'IN · Location';
 
   return (
@@ -137,19 +172,30 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
           </div>
 
           {/* Pincode Resolution Box (Direct India Post API) */}
-          <form onSubmit={handlePincodeSubmit} className="py-2">
+          <form onSubmit={handlePincodeSubmit} className="py-1.5">
             <div className="flex items-center gap-1.5">
-              <input
-                type="text"
-                value={pincodeInput}
-                onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder={t('enter_pincode')}
-                className="flex-1 bg-[#010e1a] border border-[#00dfff]/25 focus:border-[#00e3fd] text-[#eaf7ff] placeholder-[#5d859b] text-xs rounded-xl px-3 py-2 outline-none font-mono"
-              />
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={pincodeInput}
+                  onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder={t('enter_pincode')}
+                  className="w-full bg-[#010e1a] border border-[#00dfff]/30 focus:border-[#00e3fd] text-[#eaf7ff] placeholder-[#9ec4db] text-xs rounded-xl px-3 py-2 pr-7 outline-none font-mono transition-all"
+                />
+                {pincodeInput && (
+                  <button
+                    type="button"
+                    onClick={() => setPincodeInput('')}
+                    className="absolute right-2 top-2.5 text-[#7aa1b8] hover:text-[#eaf7ff]"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
               <button
                 type="submit"
                 disabled={pincodeInput.length < 6 || resolvingPin}
-                className="px-3 py-2 rounded-xl bg-[#00e3fd]/20 hover:bg-[#00e3fd]/30 disabled:opacity-40 text-[#00e3fd] border border-[#00e3fd]/40 text-xs font-mono font-bold transition-all flex items-center gap-1 cursor-pointer"
+                className="px-3 py-2 rounded-xl bg-[#00e3fd]/20 hover:bg-[#00e3fd]/30 disabled:opacity-40 text-[#00e3fd] border border-[#00e3fd]/50 text-xs font-mono font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0"
               >
                 {resolvingPin ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -160,21 +206,45 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
             </div>
           </form>
 
-          {/* Search Filter for Popular Places */}
-          <div className="relative py-1">
-            <Search className="w-3.5 h-3.5 text-[#5d859b] absolute left-3 top-3.5 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t('search_location_placeholder')}
-              className="w-full bg-[#010e1a] border border-[#00dfff]/20 text-[#eaf7ff] placeholder-[#5d859b] text-xs rounded-xl pl-8 pr-3 py-1.5 outline-none font-mono"
-            />
-          </div>
+          {/* Search Filter & Resolver for Locations */}
+          <form onSubmit={handleSearchQuerySubmit} className="py-1.5">
+            <div className="flex items-center gap-1.5">
+              <div className="relative flex-1">
+                <Search className="w-3.5 h-3.5 text-[#00dfff] absolute left-3 top-2.5 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t('search_location_placeholder')}
+                  className="w-full bg-[#010e1a] border border-[#00dfff]/30 focus:border-[#00e3fd] text-[#eaf7ff] placeholder-[#9ec4db] text-xs rounded-xl pl-8 pr-7 py-2 outline-none font-mono transition-all"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2 top-2.5 text-[#7aa1b8] hover:text-[#eaf7ff]"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+              <button
+                type="submit"
+                disabled={!searchQuery.trim() || resolvingSearch}
+                className="px-3 py-2 rounded-xl bg-[#00e3fd]/20 hover:bg-[#00e3fd]/30 disabled:opacity-40 text-[#00e3fd] border border-[#00e3fd]/50 text-xs font-mono font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                {resolvingSearch ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  t('resolve')
+                )}
+              </button>
+            </div>
+          </form>
 
           {/* Popular Cities / Hubs List */}
           <div className="mt-2 max-h-44 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
-            <div className="text-[10px] font-mono text-[#6e9bb3] uppercase tracking-wider px-1 py-0.5">
+            <div className="text-[10px] font-mono text-[#8cb6cf] uppercase tracking-wider px-1 py-0.5 font-bold">
               {t('regional_hubs')}
             </div>
 
@@ -191,15 +261,15 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
                   className={`w-full flex items-center justify-between p-2 rounded-xl text-left text-xs font-mono transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-[#00dfff]/20 border border-[#00dfff]/50 text-[#00e3fd] font-bold'
-                      : 'hover:bg-[#03223d] text-[#b4d6e7] border border-transparent'
+                      : 'hover:bg-[#03223d] text-[#e0f2fe] border border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <MapPin className="w-3 h-3 shrink-0 text-[#00dfff]" />
+                    <MapPin className="w-3.5 h-3.5 shrink-0 text-[#00dfff]" />
                     <div className="flex flex-col truncate">
-                      <span className="truncate">{loc.city}, {loc.stateCode}</span>
-                      <span className="text-[9.5px] text-[#6e9bb3]">
-                        {loc.area} · Pin: {loc.pincode}
+                      <span className="truncate font-semibold text-[#f0f9ff]">{loc.city}, {loc.stateCode}</span>
+                      <span className="text-[10.5px] text-[#9fc7de]">
+                        {loc.area} · Pin: <span className="text-[#00e3fd] font-bold">{loc.pincode}</span>
                       </span>
                     </div>
                   </div>
@@ -218,8 +288,8 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
                 onClick={() => {
                   setIsOpen(false);
                   const activePrefill =
-                    pincodeInput.trim() ||
                     searchQuery.trim() ||
+                    pincodeInput.trim() ||
                     location.pincode ||
                     location.city ||
                     location.displayName ||

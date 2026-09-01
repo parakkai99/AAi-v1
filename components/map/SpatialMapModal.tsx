@@ -51,7 +51,7 @@ export const SpatialMapModal: React.FC<SpatialMapModalProps> = ({
                   {t('live_indian_gis')}
                 </span>
               </div>
-              <p className="text-xs text-[#6e9bb3] font-mono">
+              <p className="text-xs text-[#a2cbdf] font-mono">
                 {t('india_post_osm_resolver')}
               </p>
             </div>
@@ -60,7 +60,7 @@ export const SpatialMapModal: React.FC<SpatialMapModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl bg-[#02182b] hover:bg-[#03243f] text-[#8cb0c4] hover:text-[#eaf7ff] border border-[#00dfff]/20 hover:border-[#00dfff]/50 transition-all cursor-pointer"
+            className="p-2 rounded-xl bg-[#02182b] hover:bg-[#03243f] text-[#a2cbdf] hover:text-[#eaf7ff] border border-[#00dfff]/30 hover:border-[#00dfff]/60 transition-all cursor-pointer"
             aria-label="Close Map Modal"
           >
             <X className="w-5 h-5" />
@@ -89,7 +89,7 @@ export const SpatialMapModal: React.FC<SpatialMapModalProps> = ({
         </div>
 
         {/* Modal Footer Note */}
-        <div className="px-5 py-3 border-t border-[#00dfff]/20 bg-[#021425]/60 flex items-center justify-between text-[11px] font-mono text-[#5d859b] shrink-0">
+        <div className="px-5 py-3 border-t border-[#00dfff]/20 bg-[#021425]/60 flex items-center justify-between text-[11px] font-mono text-[#8cb4cc] shrink-0">
           <div className="flex items-center gap-2">
             <Compass className="w-3.5 h-3.5 text-[#00dfff]" />
             <span>{t('active_coordinates')}: {location.latitude?.toFixed(4)}, {location.longitude?.toFixed(4)} ({location.city || 'India'})</span>

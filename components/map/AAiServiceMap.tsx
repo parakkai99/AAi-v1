@@ -13,6 +13,8 @@ import {
   ExternalLink,
   ChevronRight,
   Crosshair,
+  AlertCircle,
+  X,
 } from 'lucide-react';
 import { LocationResult } from '@/src/contracts/location';
 import { useArchitectAny } from '@/src/context/ArchitectAnyContext';
@@ -80,6 +82,7 @@ export default function AAiServiceMap({
   const [selectedType, setSelectedType] = useState<string>('ALL');
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(initialSelectedId);
   const [isSearching, setIsSearching] = useState(false);
+  const [unverifiedWarning, setUnverifiedWarning] = useState<string | null>(null);
 
   // Initial Location Value
   const initialPrefill =
@@ -103,9 +106,16 @@ export default function AAiServiceMap({
 
   const [searchText, setSearchText] = useState(initialPrefill);
 
-  // Resolve initial query only once when map loads or when explicit initialQuery changes
+  const prevInitialQueryRef = useRef<string | undefined>(initialQuery);
+
+  // Resolve initial query when map loads or when explicit initialQuery changes
   useEffect(() => {
-    if (!initialResolvedRef.current && initialQuery && initialQuery.trim()) {
+    if (initialQuery && initialQuery.trim() && initialQuery !== prevInitialQueryRef.current) {
+      prevInitialQueryRef.current = initialQuery;
+      const q = initialQuery.trim();
+      setSearchText(q);
+      handleResolveQuery(q);
+    } else if (!initialResolvedRef.current && initialQuery && initialQuery.trim()) {
       initialResolvedRef.current = true;
       const q = initialQuery.trim();
       setSearchText(q);
@@ -119,7 +129,7 @@ export default function AAiServiceMap({
       return propsServices;
     }
     return SAMPLE_SERVICES.map((s) => ({
-      id: s.serviceId,
+      id: s.id,
       name: s.name,
       type: s.category,
       description: s.description,
@@ -129,7 +139,7 @@ export default function AAiServiceMap({
       city: s.location.city,
       state: s.location.state,
       pincode: s.location.pincode,
-      available: s.availability,
+      available: s.available,
     }));
   }, [propsServices]);
 
@@ -219,6 +229,7 @@ export default function AAiServiceMap({
           setResolvedLocation(next);
           setSearchText(rev.pincode || rev.city || rev.displayName);
           setGlobalLocation(rev);
+          setUnverifiedWarning(null);
           onLocationResolved?.(next);
         }
       } catch (err) {
@@ -525,6 +536,7 @@ export default function AAiServiceMap({
     if (!query) return;
 
     setIsSearching(true);
+    setUnverifiedWarning(null);
     try {
       // Check if 6-digit Pincode
       const isPin = /^\d{6}$/.test(query);
@@ -532,10 +544,20 @@ export default function AAiServiceMap({
 
       if (isPin) {
         result = await locationService.resolvePincode(query);
+        if (!result) {
+          setUnverifiedWarning(`Pincode "${query}" could not be resolved. Please click on the map to pinpoint your location.`);
+        }
       } else {
-        const searchResults = await locationService.searchLocations(query);
-        if (searchResults.length > 0) {
-          result = searchResults[0];
+        const verification = await locationService.verifyLocationByName(query);
+        if (verification.verified && verification.candidates.length > 0) {
+          result = verification.candidates[0];
+        } else {
+          const searchResults = await locationService.searchLocations(query);
+          if (searchResults.length > 0) {
+            result = searchResults[0];
+          } else {
+            setUnverifiedWarning(`Location "${query}" unverified on map. Please click directly on the interactive map below to pinpoint your location.`);
+          }
         }
       }
 
@@ -549,7 +571,9 @@ export default function AAiServiceMap({
           longitude: result.longitude,
         };
         setResolvedLocation(nextLocation);
+        setSearchText(result.displayName || result.city || result.pincode || query);
         setGlobalLocation(result);
+        setUnverifiedWarning(null);
         onLocationResolved?.(nextLocation);
 
         if (mapRef.current) {
@@ -558,6 +582,7 @@ export default function AAiServiceMap({
       }
     } catch (error) {
       console.error('AAi Location Lookup failed:', error);
+      setUnverifiedWarning(`Could not verify location "${query}". Please click on the map to place your pin.`);
     } finally {
       setIsSearching(false);
     }
@@ -599,7 +624,12 @@ export default function AAiServiceMap({
           <input
             type="text"
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e) => {
+              setSearchText(e.target.value);
+              if (!e.target.value.trim()) {
+                setUnverifiedWarning(null);
+              }
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -607,8 +637,21 @@ export default function AAiServiceMap({
               }
             }}
             placeholder={t('map_search_placeholder')}
-            className="w-full bg-[#010e1a] border border-[#00dfff]/30 focus:border-[#00e3fd] text-[#eaf7ff] placeholder-[#5d859b] text-xs sm:text-sm rounded-xl pl-10 pr-4 py-2.5 outline-none font-mono transition-all shadow-inner"
+            className="w-full bg-[#010e1a] border border-[#00dfff]/30 focus:border-[#00e3fd] text-[#eaf7ff] placeholder-[#9ec4db] text-xs sm:text-sm rounded-xl pl-10 pr-10 py-2.5 outline-none font-mono transition-all shadow-inner"
           />
+          {searchText && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchText('');
+                setUnverifiedWarning(null);
+              }}
+              title="Clear text"
+              className="absolute right-3 top-2.5 p-1 rounded-lg text-[#7ea5bd] hover:text-[#eaf7ff] hover:bg-[#00dfff]/15 transition-colors cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         <button
@@ -661,8 +704,19 @@ export default function AAiServiceMap({
         </div>
       </div>
 
+      {/* Unverified Location Warning Banner */}
+      {unverifiedWarning && (
+        <div className="flex items-center gap-2.5 p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-mono animate-in fade-in duration-200">
+          <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+          <div className="flex-1">
+            <span className="font-bold">Map Verification: </span>
+            <span>{unverifiedWarning}</span>
+          </div>
+        </div>
+      )}
+
       {/* 3. INTERACTIVE LEAFLET SPATIAL MAP CONTAINER */}
-      <div className="relative rounded-2xl overflow-hidden border border-[#00dfff]/35 shadow-[0_12px_40px_rgba(0,0,0,0.6)] bg-[#020b14]">
+      <div className={`relative rounded-2xl overflow-hidden border ${unverifiedWarning ? 'border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.3)] animate-pulse' : 'border-[#00dfff]/35 shadow-[0_12px_40px_rgba(0,0,0,0.6)]'} bg-[#020b14]`}>
         <div
           ref={mapContainerRef}
           style={{ height: `${height}px`, width: '100%' }}

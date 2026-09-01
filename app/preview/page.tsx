@@ -6,6 +6,7 @@ import { UniverseStage } from '@/components/preview/UniverseStage';
 import { SolutionDetail } from '@/components/preview/SolutionDetail';
 import { Footer } from '@/components/preview/Footer';
 import { SpatialMapModal } from '@/components/map/SpatialMapModal';
+import { LocationPromptModal } from '@/components/location/LocationPromptModal';
 import domainsData from '@/data/universe/domains.json';
 import subdomainsData from '@/data/universe/subdomains.json';
 import capabilitiesData from '@/data/universe/solution-capabilities.json';
@@ -85,6 +86,9 @@ export default function PreviewPage() {
         initialQuery={mapModalPrefill}
         onClose={() => setIsMapModalOpen(false)}
       />
+
+      {/* 5. First-Interaction Location Intelligence Dialog */}
+      <LocationPromptModal />
     </div>
   );
 }

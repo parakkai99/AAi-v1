@@ -198,7 +198,7 @@ class IntentService implements IIntentService {
 
       if (matchText) {
         results.push({
-          id: srv.serviceId,
+          id: srv.id,
           type: 'service',
           name: srv.name,
           description: srv.description,
