@@ -18,6 +18,7 @@ import {
   MapProviderConfig,
   LocationFilterCriteria,
   MapMarkerData,
+  hasAdminAccess as hasAdminAccessContract,
 } from '../types';
 import { intentService } from '../services/intentService';
 import {
@@ -59,11 +60,15 @@ export interface ArchitectAnyContextValue {
   auth: AuthSession;
   user: User | null;
   role: UserRole | null;
+  activeRole: UserRole | null;
+  roles: UserRole[];
   permissions: Permission[];
+  hasAdminAccess: boolean;
   hasPermission: (permission: Permission) => boolean;
   login: (userUpdate?: Partial<User>) => void;
   logout: () => void;
-  setRole: (role: UserRole) => void;
+  setRole: (role: UserRole, customRoles?: UserRole[]) => void;
+  setTestProfile: (config: { roles: UserRole[]; activeRole?: UserRole; permissions?: Permission[] }) => void;
 
   // Global Configs
   apiConfig: ApiConfig;
@@ -225,12 +230,16 @@ export const ArchitectAnyProvider: React.FC<ArchitectAnyProviderProps> = ({
 
     auth,
     user: auth.user,
-    role: auth.user?.role || null,
+    role: auth.user?.activeRole || auth.user?.role || null,
+    activeRole: auth.user?.activeRole || auth.user?.role || null,
+    roles: auth.user?.roles || (auth.user?.role ? [auth.user.role] : []),
     permissions: auth.user?.permissions || [],
+    hasAdminAccess: hasAdminAccessContract(auth.user, auth.state === 'authenticated'),
     hasPermission: (perm: Permission) => authService.hasPermission(perm),
     login: (u) => authService.login(u),
     logout: () => authService.logout(),
-    setRole: (r) => authService.setRole(r),
+    setRole: (r, customRoles) => authService.setRole(r, customRoles),
+    setTestProfile: (cfg) => authService.setTestProfile(cfg),
 
     apiConfig,
     mapConfig,

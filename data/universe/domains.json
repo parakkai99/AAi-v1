@@ -1,112 +1,112 @@
 [
   {
     "id": "D01",
-    "key": "marketplace",
-    "name": "Marketplace",
-    "description": "Commerce, multi-vendor and transaction ecosystems",
-    "icon": "shopping_cart",
+    "key": "enterprise-architecture",
+    "name": "Enterprise Architecture & Governance",
+    "description": "Foundational enterprise frameworks, cloud governance, and architectural blueprint management",
+    "icon": "layers",
     "priority": 1,
     "visual": {
-      "color": "#4ade80",
-      "glowColor": "rgba(74, 222, 128, 0.4)",
+      "color": "#00dfff",
+      "glowColor": "rgba(0, 223, 255, 0.4)",
       "angle": 90,
       "orbit": "outer"
     }
   },
   {
     "id": "D02",
-    "key": "hyperlocal",
-    "name": "Hyperlocal",
-    "description": "Location-aware local services, providers and communities",
-    "icon": "location",
+    "key": "fintech-payments",
+    "name": "FinTech & Digital Payments",
+    "description": "Unified payments, UPI settlement rails, escrow protocols, and automated financial accounting",
+    "icon": "credit_card",
     "priority": 1,
     "visual": {
-      "color": "#22c55e",
-      "glowColor": "rgba(34, 197, 94, 0.4)",
+      "color": "#10b981",
+      "glowColor": "rgba(16, 185, 129, 0.4)",
       "angle": 65,
       "orbit": "inner"
     }
   },
   {
     "id": "D03",
-    "key": "business",
-    "name": "Business & Enterprise",
-    "description": "Enterprise processes, platforms and business transformation",
-    "icon": "business",
+    "key": "healthtech",
+    "name": "HealthTech & Telemedicine",
+    "description": "Digital health records, clinical triage systems, diagnostic labs, and doctor booking rails",
+    "icon": "activity",
     "priority": 1,
     "visual": {
-      "color": "#3b82f6",
-      "glowColor": "rgba(59, 130, 246, 0.4)",
+      "color": "#ec4899",
+      "glowColor": "rgba(236, 72, 153, 0.4)",
       "angle": 35,
       "orbit": "outer"
     }
   },
   {
     "id": "D04",
-    "key": "technology",
-    "name": "Technology & IT",
-    "description": "Software, cloud, infrastructure, data and AI technology",
-    "icon": "technology",
+    "key": "emerging-tech",
+    "name": "Emerging Technology & Intelligent Systems",
+    "description": "Process automation, robotics, semiconductor chip design, quantum tech, and advanced AI systems",
+    "icon": "cpu",
     "priority": 1,
     "visual": {
-      "color": "#0ea5e9",
-      "glowColor": "rgba(14, 165, 233, 0.4)",
+      "color": "#8b5cf6",
+      "glowColor": "rgba(139, 92, 246, 0.4)",
       "angle": 15,
       "orbit": "inner"
     }
   },
   {
     "id": "D05",
-    "key": "ai-data",
-    "name": "AI & Data",
-    "description": "AI agents, analytics, knowledge and intelligent automation",
-    "icon": "ai",
+    "key": "supply-chain",
+    "name": "Supply Chain & Logistics",
+    "description": "Multimodal freight logistics, warehouse management, fleet telematics, and last-mile dispatch",
+    "icon": "truck",
     "priority": 1,
     "visual": {
-      "color": "#06b6d4",
-      "glowColor": "rgba(6, 182, 212, 0.4)",
+      "color": "#f59e0b",
+      "glowColor": "rgba(245, 158, 11, 0.4)",
       "angle": 350,
       "orbit": "outer"
     }
   },
   {
     "id": "D06",
-    "key": "engineering",
-    "name": "Engineering & Projects",
-    "description": "Engineering, projects, assets and operational solutions",
-    "icon": "engineering",
-    "priority": 2,
+    "key": "marketplace",
+    "name": "Marketplace & Commerce",
+    "description": "Hyperlocal service discovery, multivendor marketplace operating models, B2B networks, and platform adapters",
+    "icon": "shopping_cart",
+    "priority": 1,
     "visual": {
-      "color": "#8b5cf6",
-      "glowColor": "rgba(139, 92, 246, 0.4)",
+      "color": "#00e3fd",
+      "glowColor": "rgba(0, 227, 253, 0.5)",
       "angle": 320,
       "orbit": "inner"
     }
   },
   {
     "id": "D07",
-    "key": "agriculture",
-    "name": "Agriculture & Rural",
-    "description": "Agri products, services, supply and rural ecosystems",
-    "icon": "agriculture",
+    "key": "mobility-transport",
+    "name": "Smart Mobility & Transport",
+    "description": "Intelligent transit routing, EV charging networks, micro-mobility, and urban fleet dispatch",
+    "icon": "compass",
     "priority": 2,
     "visual": {
-      "color": "#10b981",
-      "glowColor": "rgba(16, 185, 129, 0.4)",
+      "color": "#06b6d4",
+      "glowColor": "rgba(6, 182, 212, 0.4)",
       "angle": 295,
       "orbit": "outer"
     }
   },
   {
     "id": "D08",
-    "key": "education",
-    "name": "Education & Learning",
-    "description": "Courses, academy, knowledge and professional learning",
+    "key": "edtech",
+    "name": "EdTech & Learning Networks",
+    "description": "Adaptive tutoring engines, micro-credentialing verification, and interactive cohort spaces",
     "icon": "learning",
     "priority": 2,
     "visual": {
-      "color": "#f59e0b",
-      "glowColor": "rgba(245, 158, 11, 0.4)",
+      "color": "#3b82f6",
+      "glowColor": "rgba(59, 130, 246, 0.4)",
       "angle": 270,
       "orbit": "inner"
     }
@@ -114,8 +114,8 @@
   {
     "id": "D09",
     "key": "media-community",
-    "name": "Media & Community",
-    "description": "Blogs, social, family, village and community publishing",
+    "name": "Media, Community & Creative Arts",
+    "description": "Digital content networks, event broadcasting, decentralized media, and creator economy hubs",
     "icon": "community",
     "priority": 2,
     "visual": {
@@ -127,9 +127,9 @@
   },
   {
     "id": "D10",
-    "key": "travel-events",
-    "name": "Travel & Events",
-    "description": "Travel, events, bookings and composed experiences",
+    "key": "hospitality-leisure",
+    "name": "Travel, Hospitality & Leisure",
+    "description": "Smart resort management, dynamic tour itineraries, and travel discovery engines",
     "icon": "travel",
     "priority": 2,
     "visual": {
@@ -141,10 +141,10 @@
   },
   {
     "id": "D11",
-    "key": "finance",
-    "name": "Finance & Services",
-    "description": "Financial, payment, insurance and professional services",
-    "icon": "finance",
+    "key": "energy-cleantech",
+    "name": "Smart Energy & CleanTech",
+    "description": "Renewable microgrid orchestration, smart meter telematics, and carbon offset tracking",
+    "icon": "zap",
     "priority": 3,
     "visual": {
       "color": "#eab308",
@@ -155,42 +155,42 @@
   },
   {
     "id": "D12",
-    "key": "health-wellness",
-    "name": "Health & Wellness",
-    "description": "Health, wellness and related service ecosystems",
-    "icon": "wellness",
+    "key": "infrastructure",
+    "name": "Real Estate & Smart Infrastructure",
+    "description": "Building telemetry, smart HVAC automation, digital twins, and property tenant management",
+    "icon": "home",
     "priority": 3,
     "visual": {
-      "color": "#ec4899",
-      "glowColor": "rgba(236, 72, 153, 0.4)",
+      "color": "#94a3b8",
+      "glowColor": "rgba(148, 163, 184, 0.4)",
       "angle": 155,
       "orbit": "inner"
     }
   },
   {
     "id": "D13",
-    "key": "home-living",
-    "name": "Home & Living",
-    "description": "Home, property, maintenance and lifestyle services",
-    "icon": "home",
+    "key": "public-governance",
+    "name": "Public Governance & Citizen Services",
+    "description": "E-governance document verification, civic grievance redressal, and public benefits registry",
+    "icon": "public",
     "priority": 3,
     "visual": {
-      "color": "#94a3b8",
-      "glowColor": "rgba(148, 163, 184, 0.4)",
+      "color": "#fbbf24",
+      "glowColor": "rgba(251, 191, 36, 0.4)",
       "angle": 130,
       "orbit": "outer"
     }
   },
   {
     "id": "D14",
-    "key": "public-social",
-    "name": "Public & Social Services",
-    "description": "Civic, social, community and public-facing services",
-    "icon": "public",
+    "key": "biotech-lifesciences",
+    "name": "BioTech & Life Sciences",
+    "description": "Genomic data pipelines, bio-computational modeling, and clinical trials management",
+    "icon": "database",
     "priority": 3,
     "visual": {
-      "color": "#fbbf24",
-      "glowColor": "rgba(251, 191, 36, 0.4)",
+      "color": "#14b8a6",
+      "glowColor": "rgba(20, 184, 166, 0.4)",
       "angle": 110,
       "orbit": "inner"
     }

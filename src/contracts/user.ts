@@ -15,6 +15,7 @@ export type UserRole =
   | 'VIEWER';
 
 export type Permission =
+  | 'admin.access'
   | 'universe.view'
   | 'domain.view'
   | 'domain.manage'
@@ -37,6 +38,8 @@ export interface User {
   displayName: string;
   email: string;
   role: UserRole;
+  activeRole?: UserRole;
+  roles?: UserRole[];
   title: string;
   locale: string;
   countryCode: string;
@@ -45,10 +48,12 @@ export interface User {
   avatar?: string;
   signature?: string;
   permissions: Permission[];
+  authenticated?: boolean;
 }
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   ADMIN: [
+    'admin.access',
     'universe.view',
     'domain.view',
     'domain.manage',
@@ -66,6 +71,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'system.manage',
   ],
   CHIEF_ARCHITECT: [
+    'admin.access',
     'universe.view',
     'domain.view',
     'domain.manage',
@@ -138,3 +144,35 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'solution.view',
   ],
 };
+
+/**
+ * Authoritative authorization helper to determine Admin Access:
+ * 1. Permissions-first: user.permissions.includes('admin.access') (Final Authority)
+ * 2. Roles check: roles.includes('ADMIN') or (roles.includes('DEVELOPER') && roles.includes('ADMIN'))
+ * 3. Active role check: user.activeRole === 'ADMIN' or user.role === 'ADMIN'
+ * Note: Never checks username or identity strings.
+ */
+export function hasAdminAccess(user: User | null, isAuthenticated: boolean = true): boolean {
+  if (!isAuthenticated || !user) return false;
+
+  // 1. Permission-first check (Final authority)
+  if (Array.isArray(user.permissions) && user.permissions.includes('admin.access')) {
+    return true;
+  }
+
+  // 2. Roles check
+  const roles = user.roles || (user.role ? [user.role] : []);
+  if (roles.includes('ADMIN')) {
+    return true;
+  }
+  if (roles.includes('DEVELOPER') && roles.includes('ADMIN')) {
+    return true;
+  }
+
+  // 3. Active role check
+  if (user.activeRole === 'ADMIN' || user.role === 'ADMIN') {
+    return true;
+  }
+
+  return false;
+}

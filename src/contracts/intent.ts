@@ -19,18 +19,21 @@ export interface IntentState {
   domainId: string | null;
   subdomainId: string | null;
   capabilityId: string | null;
+  solutionBundleId?: string | null;
   solutionId: string | null;
   serviceId: string | null;
   providerId: string | null;
   category: string | null;
   intentType?: IntentType;
+  path?: Array<{ id: string; name: string; layer: number }>;
 }
 
 export type SearchResultType =
   | 'solution'
-  | 'domain'
-  | 'subdomain'
+  | 'bundle'
   | 'capability'
+  | 'subdomain'
+  | 'domain'
   | 'service'
   | 'provider';
 

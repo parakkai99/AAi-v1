@@ -9,6 +9,8 @@ import {
   Layers,
   Sparkles,
   Shield,
+  ArrowRight,
+  Sliders,
 } from 'lucide-react';
 import { useArchitectAny } from '@/src/context/ArchitectAnyContext';
 import { UserRole } from '@/src/contracts/user';
@@ -17,25 +19,103 @@ export interface UserMenuProps {
   className?: string;
 }
 
-const ROLES_LIST: UserRole[] = [
-  'CHIEF_ARCHITECT',
-  'ADMIN',
-  'ARCHITECT',
-  'DEVELOPER',
-  'SOLUTION_BUILDER',
-  'PROVIDER',
-  'SELLER',
-  'CLIENT',
-  'CUSTOMER',
-  'VIEWER',
+// Role testing configuration presets matching requirement rules
+interface RolePreset {
+  id: string;
+  label: string;
+  role: UserRole;
+  roles: UserRole[];
+  adminExpected: boolean;
+}
+
+const ROLE_PRESETS: RolePreset[] = [
+  {
+    id: 'CHIEF_ARCHITECT',
+    label: 'CHIEF_ARCHITECT',
+    role: 'CHIEF_ARCHITECT',
+    roles: ['DEVELOPER', 'ADMIN', 'CHIEF_ARCHITECT'],
+    adminExpected: true,
+  },
+  {
+    id: 'ADMIN',
+    label: 'ADMIN',
+    role: 'ADMIN',
+    roles: ['ADMIN'],
+    adminExpected: true,
+  },
+  {
+    id: 'DEVELOPER_AND_ADMIN',
+    label: 'DEVELOPER + ADMIN',
+    role: 'ADMIN',
+    roles: ['DEVELOPER', 'ADMIN'],
+    adminExpected: true,
+  },
+  {
+    id: 'DEVELOPER',
+    label: 'DEVELOPER',
+    role: 'DEVELOPER',
+    roles: ['DEVELOPER'],
+    adminExpected: false,
+  },
+  {
+    id: 'ARCHITECT',
+    label: 'ARCHITECT',
+    role: 'ARCHITECT',
+    roles: ['ARCHITECT'],
+    adminExpected: false,
+  },
+  {
+    id: 'SOLUTION_BUILDER',
+    label: 'SOLUTION_BUILDER',
+    role: 'SOLUTION_BUILDER',
+    roles: ['SOLUTION_BUILDER'],
+    adminExpected: false,
+  },
+  {
+    id: 'PROVIDER',
+    label: 'PROVIDER',
+    role: 'PROVIDER',
+    roles: ['PROVIDER'],
+    adminExpected: false,
+  },
+  {
+    id: 'SELLER',
+    label: 'SELLER',
+    role: 'SELLER',
+    roles: ['SELLER'],
+    adminExpected: false,
+  },
+  {
+    id: 'CLIENT',
+    label: 'CLIENT',
+    role: 'CLIENT',
+    roles: ['CLIENT'],
+    adminExpected: false,
+  },
+  {
+    id: 'CUSTOMER',
+    label: 'CUSTOMER',
+    role: 'CUSTOMER',
+    roles: ['CUSTOMER'],
+    adminExpected: false,
+  },
+  {
+    id: 'VIEWER',
+    label: 'VIEWER',
+    role: 'VIEWER',
+    roles: ['VIEWER'],
+    adminExpected: false,
+  },
 ];
 
 export const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
-  const { auth, user, role, permissions, login, logout, setRole } = useArchitectAny();
+  const { auth, user, role, roles, permissions, hasAdminAccess, login, logout, setTestProfile } =
+    useArchitectAny();
   const [isOpen, setIsOpen] = useState(false);
+  const [routeNotice, setRouteNotice] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const isAuthenticated = auth.state === 'authenticated';
+  const isAuthenticated = auth.state === 'authenticated' && Boolean(user);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -47,6 +127,36 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Determine current preset key
+  const currentPresetId = (() => {
+    if (roles?.includes('DEVELOPER') && roles?.includes('ADMIN') && roles.length === 2) {
+      return 'DEVELOPER_AND_ADMIN';
+    }
+    return role || 'CHIEF_ARCHITECT';
+  })();
+
+  const handleRolePresetChange = (presetId: string) => {
+    const preset = ROLE_PRESETS.find((p) => p.id === presetId);
+    if (preset) {
+      setTestProfile({
+        roles: preset.roles,
+        activeRole: preset.role,
+      });
+    }
+  };
+
+  const handleAdminNavigate = () => {
+    try {
+      window.history.pushState(null, '', '/admin');
+    } catch {
+      // ignore
+    }
+    setRouteNotice('Navigating to /admin (Route Contract)');
+    setTimeout(() => {
+      setRouteNotice(null);
+    }, 2500);
+  };
+
   return (
     <div ref={dropdownRef} className={`relative ${className}`}>
       {/* User Header Capsule */}
@@ -54,7 +164,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 pl-2 border-l border-[#00dfff]/25 cursor-pointer group select-none focus:outline-none"
-        title="Vijay Kumar K — Chief Architect & Inventor"
+        title={user?.displayName ? `${user.displayName} — ${role || 'User'}` : 'User Profile'}
       >
         {/* Name and Role text (Desktop only) */}
         <div className="hidden lg:flex flex-col items-end text-right">
@@ -63,7 +173,11 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
           </span>
           <span className="font-mono text-[9px] text-[#00dfff] uppercase tracking-wider leading-tight flex items-center gap-1 font-semibold">
             <ShieldCheck className="w-2.5 h-2.5" />
-            {role === 'CHIEF_ARCHITECT' ? 'Chief Architect' : role || 'Architect'}
+            {role === 'CHIEF_ARCHITECT'
+              ? 'Chief Architect'
+              : roles?.includes('DEVELOPER') && roles?.includes('ADMIN')
+              ? 'Dev + Admin'
+              : role || 'Architect'}
           </span>
         </div>
 
@@ -90,7 +204,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
           <div className="flex items-center gap-3 pb-3 border-b border-[#00dfff]/20">
             <img
               src={user?.avatar || '/assets/vijay-profile-sm.jpg'}
-              alt="Vijay Kumar K"
+              alt={user?.displayName || 'User'}
               className="w-12 h-12 rounded-xl object-cover border border-[#00dfff]/40 shadow-md"
             />
             <div className="flex flex-col min-w-0">
@@ -115,26 +229,63 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
               </span>
             </div>
 
-            <div className="flex justify-between items-center">
-              <span>Active Role:</span>
+            <div className="flex justify-between items-center gap-2">
+              <span className="shrink-0">Active Role:</span>
               <select
-                value={role || 'CHIEF_ARCHITECT'}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                className="bg-[#010d18] border border-[#00dfff]/30 rounded-lg px-2 py-1 text-xs text-[#00e3fd] font-bold focus:outline-none"
+                value={currentPresetId}
+                onChange={(e) => handleRolePresetChange(e.target.value)}
+                className="bg-[#010d18] border border-[#00dfff]/30 rounded-lg px-2 py-1 text-xs text-[#00e3fd] font-bold focus:outline-none max-w-[170px]"
               >
-                {ROLES_LIST.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
+                {ROLE_PRESETS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
                   </option>
                 ))}
               </select>
             </div>
 
             <div className="flex justify-between items-center">
-              <span>Active Permissions:</span>
-              <span className="text-[#dff7ff] font-bold">{permissions.length} granted</span>
+              <span>Permissions:</span>
+              <span className="text-[#dff7ff] font-bold">
+                {permissions.length} granted{' '}
+                {permissions.includes('admin.access') && (
+                  <span className="text-[#00e3fd] text-[10px] bg-[#00e3fd]/10 px-1 py-0.5 rounded border border-[#00e3fd]/25 ml-1">
+                    admin.access
+                  </span>
+                )}
+              </span>
             </div>
           </div>
+
+          {/* Role-Based Admin Launcher Section */}
+          {isAuthenticated && hasAdminAccess && (
+            <div className="py-2.5 border-b border-[#00dfff]/20">
+              <button
+                type="button"
+                onClick={handleAdminNavigate}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-gradient-to-r from-[#00dfff]/15 via-[#0077b6]/20 to-[#00dfff]/10 hover:from-[#00dfff]/25 hover:to-[#0077b6]/35 border border-[#00dfff]/40 hover:border-[#00e3fd] text-[#00e3fd] text-xs font-mono font-bold transition-all shadow-[0_0_12px_rgba(0,227,253,0.15)] group cursor-pointer"
+                title="Launch Admin Console (/admin)"
+              >
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-[#00e3fd] group-hover:scale-110 transition-transform" />
+                  <span className="tracking-wide">Admin Console</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#00dfff]/20 text-[#eaf7ff] uppercase tracking-wider font-semibold border border-[#00dfff]/30">
+                    /admin
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#00dfff] group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* Route Notification Toast (Route Contract) */}
+          {routeNotice && (
+            <div className="my-2 p-2 rounded-lg bg-[#00dfff]/15 border border-[#00dfff]/40 text-[#00e3fd] font-mono text-[11px] text-center animate-in fade-in">
+              {routeNotice}
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="pt-3 flex gap-2">
@@ -145,7 +296,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
                   logout();
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-mono font-bold transition-all"
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-mono font-bold transition-all cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 Sign Out
@@ -157,10 +308,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
                   login();
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#00dfff]/15 hover:bg-[#00dfff]/25 text-[#00e3fd] border border-[#00dfff]/40 text-xs font-mono font-bold transition-all"
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#00dfff]/15 hover:bg-[#00dfff]/25 text-[#00e3fd] border border-[#00dfff]/40 text-xs font-mono font-bold transition-all cursor-pointer"
               >
                 <LogIn className="w-3.5 h-3.5" />
-                Sign In as Chief Architect
+                Sign In
               </button>
             )}
           </div>
@@ -169,3 +320,4 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
     </div>
   );
 };
+

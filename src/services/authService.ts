@@ -3,7 +3,7 @@
  * Manages user lifecycle, roles, data-driven permissions, and sessions
  */
 
-import { User, UserRole, Permission, ROLE_PERMISSIONS } from '../contracts/user';
+import { User, UserRole, Permission, ROLE_PERMISSIONS, hasAdminAccess as hasAdminAccessContract } from '../contracts/user';
 import { AuthSession, AuthState, IAuthService } from '../contracts/auth';
 
 export const CHIEF_ARCHITECT_USER: User = {
@@ -12,6 +12,8 @@ export const CHIEF_ARCHITECT_USER: User = {
   displayName: 'Vijay Kumar K',
   email: 'vijaya.k.kumar@architectany.com',
   role: 'CHIEF_ARCHITECT',
+  activeRole: 'CHIEF_ARCHITECT',
+  roles: ['DEVELOPER', 'ADMIN', 'CHIEF_ARCHITECT'],
   title: 'Chief Architect & Inventor',
   locale: 'en-IN',
   countryCode: 'IN',
@@ -20,6 +22,7 @@ export const CHIEF_ARCHITECT_USER: User = {
   avatar: '/assets/vijay-profile-sm.jpg',
   signature: '/assets/vijay-profile-sm.jpg',
   permissions: ROLE_PERMISSIONS.CHIEF_ARCHITECT,
+  authenticated: true,
 };
 
 class AuthService implements IAuthService {
@@ -44,12 +47,21 @@ class AuthService implements IAuthService {
     return this.currentSession.user?.role || null;
   }
 
+  getRoles(): UserRole[] {
+    if (!this.currentSession.user) return [];
+    return this.currentSession.user.roles || (this.currentSession.user.role ? [this.currentSession.user.role] : []);
+  }
+
   getPermissions(): Permission[] {
     return this.currentSession.user?.permissions || [];
   }
 
   isAuthenticated(): boolean {
     return this.currentSession.state === 'authenticated' && !!this.currentSession.user;
+  }
+
+  hasAdminAccess(): boolean {
+    return hasAdminAccessContract(this.currentSession.user, this.isAuthenticated());
   }
 
   hasPermission(permission: Permission): boolean {
@@ -65,6 +77,9 @@ class AuthService implements IAuthService {
       ...userUpdate,
     };
     user.permissions = ROLE_PERMISSIONS[user.role] || user.permissions;
+    user.roles = user.roles || (user.role === 'CHIEF_ARCHITECT' ? ['DEVELOPER', 'ADMIN', 'CHIEF_ARCHITECT'] : [user.role]);
+    user.activeRole = user.activeRole || user.role;
+    user.authenticated = true;
 
     this.currentSession = {
       state: 'authenticated',
@@ -85,16 +100,57 @@ class AuthService implements IAuthService {
     this.notify();
   }
 
-  setRole(role: UserRole): void {
+  setRole(role: UserRole, customRoles?: UserRole[]): void {
     if (this.currentSession.user) {
+      const assignedRoles: UserRole[] = customRoles || (role === 'CHIEF_ARCHITECT' ? ['DEVELOPER', 'ADMIN', 'CHIEF_ARCHITECT'] : [role]);
+      
+      // Derive permissions from all assigned roles
+      const derivedPermissions: Permission[] = [];
+      assignedRoles.forEach((r) => {
+        (ROLE_PERMISSIONS[r] || []).forEach((p) => {
+          if (!derivedPermissions.includes(p)) {
+            derivedPermissions.push(p);
+          }
+        });
+      });
+
       const updatedUser: User = {
         ...this.currentSession.user,
         role,
-        permissions: ROLE_PERMISSIONS[role] || [],
+        activeRole: role,
+        roles: assignedRoles,
+        permissions: derivedPermissions,
       };
       this.currentSession = {
         ...this.currentSession,
         user: updatedUser,
+      };
+      this.notify();
+    }
+  }
+
+  setTestProfile(config: { roles: UserRole[]; activeRole?: UserRole; permissions?: Permission[] }): void {
+    if (this.currentSession.user) {
+      const activeRole = config.activeRole || config.roles[0] || 'CUSTOMER';
+      let permissions = config.permissions;
+      if (!permissions) {
+        permissions = [];
+        config.roles.forEach((r) => {
+          (ROLE_PERMISSIONS[r] || []).forEach((p) => {
+            if (!permissions!.includes(p)) permissions!.push(p);
+          });
+        });
+      }
+
+      this.currentSession = {
+        ...this.currentSession,
+        user: {
+          ...this.currentSession.user,
+          role: activeRole,
+          activeRole,
+          roles: config.roles,
+          permissions,
+        },
       };
       this.notify();
     }
@@ -123,3 +179,4 @@ class AuthService implements IAuthService {
 }
 
 export const authService = new AuthService();
+

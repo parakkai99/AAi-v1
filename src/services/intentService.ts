@@ -9,21 +9,20 @@ import {
   IIntentService,
 } from '../contracts/intent';
 import { LocationContextState } from '../contracts/location';
-import domainsData from '@/data/universe/domains.json';
-import subdomainsData from '@/data/universe/subdomains.json';
-import capabilitiesData from '@/data/universe/solution-capabilities.json';
-import solutionsData from '@/data/universe/solutions.json';
+import { catalogRepository } from '../repositories/catalogRepository';
 import { SAMPLE_SERVICES } from './locationService';
 
 export const SUGGESTED_INTENTS: string[] = [
-  'Build a village event marketplace',
-  'Find banana tissue culture suppliers near me',
-  'Create an AI data solution',
-  'Find catering services in Coimbatore',
-  'Hyperlocal grocery & multi-vendor delivery',
-  'Enterprise cloud telemetry & microservices',
-  'Micro-finance & rural credit platform',
-  'Smart agricultural supply chain & cold storage',
+  'event booking',
+  'event services near Coimbatore',
+  'build a hyperlocal marketplace',
+  'build a multivendor marketplace',
+  'multivendor marketplace using Shopify',
+  'multivendor marketplace using Zoho Commerce',
+  'marketplace using Magento',
+  'marketplace using OpenCart',
+  'find catering for an event',
+  'find a venue for an event',
 ];
 
 class IntentService implements IIntentService {
@@ -75,51 +74,57 @@ class IntentService implements IIntentService {
 
     if (!q) return parsed;
 
-    // 1. Check direct domain match
-    const domains = domainsData as any[];
-    const matchedDomain = domains.find(
-      (d) =>
-        d.id?.toLowerCase() === q ||
-        d.name?.toLowerCase().includes(q) ||
-        d.key?.toLowerCase().includes(q),
-    );
-    if (matchedDomain) {
-      parsed.domainId = matchedDomain.id;
-      parsed.intentType = 'domain';
-      parsed.category = matchedDomain.name;
+    // 1. Check direct catalog match
+    const catalogItem = await catalogRepository.getItemById(q);
+    if (catalogItem) {
+      parsed.domainId = catalogItem.domainId;
+      parsed.path = catalogItem.path;
+      if (catalogItem.layer === 1) {
+        parsed.intentType = 'domain';
+      } else if (catalogItem.layer === 2) {
+        parsed.subdomainId = catalogItem.id;
+        parsed.intentType = 'subdomain';
+      } else if (catalogItem.layer === 3) {
+        parsed.capabilityId = catalogItem.id;
+        parsed.intentType = 'capability';
+      } else if (catalogItem.layer === 5) {
+        parsed.solutionId = catalogItem.id;
+        parsed.intentType = 'solution';
+      }
+      parsed.category = catalogItem.name;
+    } else {
+      // Check search items
+      const matches = await catalogRepository.searchItems(q);
+      if (matches.length > 0) {
+        const top = matches[0];
+        parsed.domainId = top.domainId;
+        parsed.path = top.path;
+        if (top.layer === 5) parsed.solutionId = top.id;
+        if (top.layer === 3) parsed.capabilityId = top.id;
+        parsed.category = top.name;
+      }
     }
 
-    // 2. Check solution match
-    const solutions = solutionsData as any[];
-    const matchedSolution = solutions.find(
-      (s) =>
-        s.id?.toLowerCase() === q ||
-        s.name?.toLowerCase().includes(q) ||
-        s.key?.toLowerCase().includes(q),
-    );
-    if (matchedSolution) {
-      parsed.solutionId = matchedSolution.id;
-      parsed.domainId = matchedSolution.domainIds?.[0] || parsed.domainId;
-      parsed.intentType = 'solution';
-    }
-
-    // 3. Keyword Heuristics for natural language
-    if (q.includes('market') || q.includes('vendor') || q.includes('commerce') || q.includes('event')) {
-      parsed.domainId = parsed.domainId || 'D01';
-      parsed.category = 'Marketplace & Events';
-    } else if (q.includes('banana') || q.includes('agri') || q.includes('farm') || q.includes('rural')) {
-      parsed.domainId = parsed.domainId || 'D07';
-      parsed.category = 'Agriculture & Rural';
-    } else if (q.includes('ai') || q.includes('model') || q.includes('data') || q.includes('vector')) {
-      parsed.domainId = parsed.domainId || 'D05';
-      parsed.category = 'AI & Data';
-    } else if (q.includes('cater') || q.includes('food') || q.includes('wedding')) {
-      parsed.domainId = parsed.domainId || 'D01';
-      parsed.serviceId = 'SRV-001';
-      parsed.category = 'Hospitality & Catering';
+    // 2. Keyword Heuristics for natural language
+    if (q.includes('event') || q.includes('cater') || q.includes('venue') || q.includes('wedding')) {
+      parsed.domainId = parsed.domainId || 'D06';
+      parsed.subdomainId = parsed.subdomainId || 'D06.01';
+      parsed.capabilityId = parsed.capabilityId || 'D06.01.01';
+      parsed.solutionBundleId = parsed.solutionBundleId || 'D06.01.01.01';
+      parsed.category = 'Hyperlocal Event Booking';
+    } else if (q.includes('multivendor') || q.includes('shopify') || q.includes('zoho') || q.includes('magento') || q.includes('opencart')) {
+      parsed.domainId = parsed.domainId || 'D06';
+      parsed.subdomainId = parsed.subdomainId || 'D06.02';
+      parsed.capabilityId = parsed.capabilityId || 'D06.02.15';
+      parsed.solutionBundleId = parsed.solutionBundleId || 'D06.02.15.01';
+      parsed.category = 'Multivendor Marketplace';
+    } else if (q.includes('ai') || q.includes('robot') || q.includes('quantum') || q.includes('automation')) {
+      parsed.domainId = parsed.domainId || 'D04';
+      parsed.category = 'Emerging Tech & Intelligent Systems';
     } else if (q.includes('local') || q.includes('delivery') || q.includes('courier')) {
-      parsed.domainId = parsed.domainId || 'D02';
-      parsed.category = 'Hyperlocal';
+      parsed.domainId = parsed.domainId || 'D06';
+      parsed.subdomainId = 'D06.01';
+      parsed.category = 'Hyperlocal Marketplace';
     }
 
     return parsed;
@@ -131,63 +136,52 @@ class IntentService implements IIntentService {
 
     const results: SearchResultItem[] = [];
 
-    // 1. Search Solutions
-    const solutions = solutionsData as any[];
-    solutions.forEach((sol) => {
-      if (
-        sol.name.toLowerCase().includes(q) ||
-        sol.id.toLowerCase().includes(q) ||
-        (sol.description && sol.description.toLowerCase().includes(q))
-      ) {
-        results.push({
-          id: sol.id,
-          type: 'solution',
-          name: sol.name,
-          description: sol.description,
-          domainId: sol.domainIds?.[0] || 'D01',
-          category: 'Solution Architecture',
-          badge: sol.mode || 'Composed',
-        });
+    // 1. Search Canonical 5-Layer Catalog
+    const catalogMatches = await catalogRepository.searchItems(q);
+    catalogMatches.forEach((item) => {
+      let badge = 'Catalog';
+      let category = 'ArchitectAny Catalog';
+
+      if (item.layer === 1) {
+        badge = 'Domain (L1)';
+        category = 'Domain Galaxy';
+      } else if (item.layer === 2) {
+        badge = 'Subdomain (L2)';
+        category = 'Subdomain';
+      } else if (item.layer === 3) {
+        badge = 'Capability (L3)';
+        category = 'Capability';
+      } else if (item.layer === 4) {
+        badge = 'Bundle (L4)';
+        category = 'Solution Bundle';
+      } else if (item.layer === 5) {
+        badge = 'Solution (L5)';
+        category = 'Solution Architecture';
       }
+
+      // Hierarchy Context Path Breadcrumb
+      const pathBreadcrumb = item.path && item.path.length > 1
+        ? item.path.map((p) => p.name).join(' → ')
+        : item.description;
+
+      results.push({
+        id: item.id,
+        type: item.type.toLowerCase() as any,
+        name: `${item.id} — ${item.name}`,
+        description: pathBreadcrumb || item.description,
+        domainId: item.domainId,
+        category,
+        badge,
+        meta: {
+          layer: item.layer,
+          path: item.path,
+          platformOptions: item.platformOptions,
+          relatedCapabilities: item.relatedCapabilities,
+        },
+      });
     });
 
-    // 2. Search Domains
-    const domains = domainsData as any[];
-    domains.forEach((dom) => {
-      if (
-        dom.name.toLowerCase().includes(q) ||
-        dom.id.toLowerCase().includes(q) ||
-        (dom.description && dom.description.toLowerCase().includes(q))
-      ) {
-        results.push({
-          id: dom.id,
-          type: 'domain',
-          name: `${dom.id} — ${dom.name}`,
-          description: dom.description,
-          domainId: dom.id,
-          category: 'Domain Galaxy',
-          badge: 'Domain',
-        });
-      }
-    });
-
-    // 3. Search Capabilities
-    const capabilities = capabilitiesData as any[];
-    capabilities.forEach((cap) => {
-      if (cap.name.toLowerCase().includes(q) || cap.id.toLowerCase().includes(q)) {
-        results.push({
-          id: cap.id,
-          type: 'capability',
-          name: cap.name,
-          description: `Category: ${cap.category}`,
-          domainId: cap.domainId,
-          category: 'Capability',
-          badge: 'API Mesh',
-        });
-      }
-    });
-
-    // 4. Search Location-Aware Services & Providers
+    // 2. Search Location-Aware Services & Providers
     SAMPLE_SERVICES.forEach((srv) => {
       const matchText =
         srv.name.toLowerCase().includes(q) ||

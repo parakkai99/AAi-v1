@@ -10,6 +10,8 @@ export * from './contracts/user';
 export * from './contracts/auth';
 export * from './contracts/service';
 export * from './contracts/api';
+export * from './contracts/catalog';
+export * from './contracts/platformAdapter';
 
 export interface DomainVisual {
   color: string;
