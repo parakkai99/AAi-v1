@@ -125,6 +125,156 @@
   ],
   "subdomains": [
     {
+      "id": "D01.01",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Enterprise Frameworks & EA",
+      "parentId": "D01",
+      "domainId": "D01",
+      "path": [
+        { "id": "D01", "name": "Enterprise Architecture & Governance", "layer": 1, "type": "DOMAIN" },
+        { "id": "D01.01", "name": "Enterprise Frameworks & EA", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "TOGAF, Zachman frameworks, capability mapping, and architectural blueprint repository.",
+      "keywords": ["enterprise", "togaf", "ea", "blueprint", "governance"],
+      "status": "active"
+    },
+    {
+      "id": "D01.02",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Cloud Governance & FinOps",
+      "parentId": "D01",
+      "domainId": "D01",
+      "path": [
+        { "id": "D01", "name": "Enterprise Architecture & Governance", "layer": 1, "type": "DOMAIN" },
+        { "id": "D01.02", "name": "Cloud Governance & FinOps", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Multi-cloud compliance policy, resource tagging, cost allocation, and landing zone automation.",
+      "keywords": ["cloud", "finops", "governance", "cost", "compliance"],
+      "status": "active"
+    },
+    {
+      "id": "D01.03",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Security & Zero Trust Architecture",
+      "parentId": "D01",
+      "domainId": "D01",
+      "path": [
+        { "id": "D01", "name": "Enterprise Architecture & Governance", "layer": 1, "type": "DOMAIN" },
+        { "id": "D01.03", "name": "Security & Zero Trust Architecture", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Identity-driven perimeter security, continuous audit logging, and automated threat modeling.",
+      "keywords": ["security", "zero trust", "iam", "compliance", "audit"],
+      "status": "active"
+    },
+    {
+      "id": "D02.01",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Unified Payments & UPI Rails",
+      "parentId": "D02",
+      "domainId": "D02",
+      "path": [
+        { "id": "D02", "name": "FinTech & Digital Payments", "layer": 1, "type": "DOMAIN" },
+        { "id": "D02.01", "name": "Unified Payments & UPI Rails", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Real-time UPI payment gateways, QR code processing, intent links, and merchant settlement.",
+      "keywords": ["upi", "payments", "gateway", "qr code", "instant settlement"],
+      "status": "active"
+    },
+    {
+      "id": "D02.02",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Multi-Party Escrow & Settlements",
+      "parentId": "D02",
+      "domainId": "D02",
+      "path": [
+        { "id": "D02", "name": "FinTech & Digital Payments", "layer": 1, "type": "DOMAIN" },
+        { "id": "D02.02", "name": "Multi-Party Escrow & Settlements", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Conditional escrow holding, automated commission splitting, milestone payouts, and ledger audit.",
+      "keywords": ["escrow", "split payments", "commission", "settlement", "payouts"],
+      "status": "active"
+    },
+    {
+      "id": "D02.03",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Core Banking & Double-Entry Ledger",
+      "parentId": "D02",
+      "domainId": "D02",
+      "path": [
+        { "id": "D02", "name": "FinTech & Digital Payments", "layer": 1, "type": "DOMAIN" },
+        { "id": "D02.03", "name": "Core Banking & Double-Entry Ledger", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Immutable double-entry transaction ledgers, sub-accounts, currency conversion, and balance integrity.",
+      "keywords": ["ledger", "banking", "double entry", "accounting", "multi currency"],
+      "status": "active"
+    },
+    {
+      "id": "D02.04",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Fraud Prevention & Risk Scoring",
+      "parentId": "D02",
+      "domainId": "D02",
+      "path": [
+        { "id": "D02", "name": "FinTech & Digital Payments", "layer": 1, "type": "DOMAIN" },
+        { "id": "D02.04", "name": "Fraud Prevention & Risk Scoring", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Behavioral anomaly detection, transaction velocity rules, KYC/AML check pipelines, and risk graphs.",
+      "keywords": ["fraud", "aml", "kyc", "risk", "anomaly detection"],
+      "status": "active"
+    },
+    {
+      "id": "D03.01",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Clinical EHR & Health Records",
+      "parentId": "D03",
+      "domainId": "D03",
+      "path": [
+        { "id": "D03", "name": "HealthTech & Telemedicine", "layer": 1, "type": "DOMAIN" },
+        { "id": "D03.01", "name": "Clinical EHR & Health Records", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "HL7/FHIR compliant electronic medical records, patient history, and prescription synchronization.",
+      "keywords": ["ehr", "fhir", "medical records", "clinical", "prescriptions"],
+      "status": "active"
+    },
+    {
+      "id": "D03.02",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Telemedicine & Virtual Triage",
+      "parentId": "D03",
+      "domainId": "D03",
+      "path": [
+        { "id": "D03", "name": "HealthTech & Telemedicine", "layer": 1, "type": "DOMAIN" },
+        { "id": "D03.02", "name": "Telemedicine & Virtual Triage", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Encrypted video consultation, triage questionnaires, doctor scheduling, and e-prescribing.",
+      "keywords": ["telemedicine", "video consult", "doctor booking", "triage"],
+      "status": "active"
+    },
+    {
+      "id": "D03.03",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Diagnostic Labs & Pharmacy Network",
+      "parentId": "D03",
+      "domainId": "D03",
+      "path": [
+        { "id": "D03", "name": "HealthTech & Telemedicine", "layer": 1, "type": "DOMAIN" },
+        { "id": "D03.03", "name": "Diagnostic Labs & Pharmacy Network", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Home sample collection dispatch, diagnostic report delivery, and pharmacy inventory routing.",
+      "keywords": ["diagnostic labs", "pharmacy", "medicine delivery", "blood test"],
+      "status": "active"
+    },
+    {
       "id": "D04.01",
       "type": "SUBDOMAIN",
       "layer": 2,
@@ -288,6 +438,141 @@
       "description": "Omnichannel retail marketplaces with centralized cart, cross-brand inventory, and loyalty rewards.",
       "keywords": ["commerce", "retail", "omnichannel", "shopping"],
       "status": "active"
+    },
+    {
+      "id": "D05.01",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Multimodal Freight & Shipping",
+      "parentId": "D05",
+      "domainId": "D05",
+      "path": [
+        { "id": "D05", "name": "Supply Chain & Logistics", "layer": 1, "type": "DOMAIN" },
+        { "id": "D05.01", "name": "Multimodal Freight & Shipping", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Container tracking, maritime bill of lading, air cargo customs routing, and intermodal transfers.",
+      "keywords": ["freight", "shipping", "cargo", "customs", "multimodal"],
+      "status": "active"
+    },
+    {
+      "id": "D05.02",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Warehouse Management & Automation",
+      "parentId": "D05",
+      "domainId": "D05",
+      "path": [
+        { "id": "D05", "name": "Supply Chain & Logistics", "layer": 1, "type": "DOMAIN" },
+        { "id": "D05.02", "name": "Warehouse Management & Automation", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "ASRS pallet automation, RFID bin tracking, cross-docking dispatch, and 3PL multi-client storage.",
+      "keywords": ["warehouse", "wms", "rfid", "inventory", "fulfillment"],
+      "status": "active"
+    },
+    {
+      "id": "D05.03",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Fleet Telematics & Last-Mile Dispatch",
+      "parentId": "D05",
+      "domainId": "D05",
+      "path": [
+        { "id": "D05", "name": "Supply Chain & Logistics", "layer": 1, "type": "DOMAIN" },
+        { "id": "D05.03", "name": "Fleet Telematics & Last-Mile Dispatch", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Dynamic route optimization, OBD-II vehicle diagnostics, cold-chain temperature logs, and proof of delivery.",
+      "keywords": ["fleet", "telematics", "last mile", "delivery", "route optimization"],
+      "status": "active"
+    },
+    {
+      "id": "D07.01",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Intelligent Transit & Route Mesh",
+      "parentId": "D07",
+      "domainId": "D07",
+      "path": [
+        { "id": "D07", "name": "Smart Mobility & Transport", "layer": 1, "type": "DOMAIN" },
+        { "id": "D07.01", "name": "Intelligent Transit & Route Mesh", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Multi-modal commuter routing, real-time bus/metro telemetry, dynamic traffic signal integration.",
+      "keywords": ["transit", "traffic", "commuter", "metro", "bus"],
+      "status": "active"
+    },
+    {
+      "id": "D07.02",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "EV Charging & Grid Telemetry",
+      "parentId": "D07",
+      "domainId": "D07",
+      "path": [
+        { "id": "D07", "name": "Smart Mobility & Transport", "layer": 1, "type": "DOMAIN" },
+        { "id": "D07.02", "name": "EV Charging & Grid Telemetry", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "OCPP protocol charging station networks, peak-load battery scheduling, and EV driver billing.",
+      "keywords": ["ev", "charging", "battery", "ocpp", "energy"],
+      "status": "active"
+    },
+    {
+      "id": "D07.03",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Micro-Mobility & Urban Fleet Dispatch",
+      "parentId": "D07",
+      "domainId": "D07",
+      "path": [
+        { "id": "D07", "name": "Smart Mobility & Transport", "layer": 1, "type": "DOMAIN" },
+        { "id": "D07.03", "name": "Micro-Mobility & Urban Fleet Dispatch", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Dockless e-bike/scooter geofencing, urban fleet rebalancing algorithms, and instant rental unlocks.",
+      "keywords": ["scooter", "e-bike", "mobility", "geofencing", "fleet"],
+      "status": "active"
+    },
+    {
+      "id": "D08.01",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Adaptive Tutoring & Learning Paths",
+      "parentId": "D08",
+      "domainId": "D08",
+      "path": [
+        { "id": "D08", "name": "EdTech & Learning Networks", "layer": 1, "type": "DOMAIN" },
+        { "id": "D08.01", "name": "Adaptive Tutoring & Learning Paths", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Personalized skill graphs, pacing engines, generative quiz modules, and spaced repetition algorithms.",
+      "keywords": ["learning", "tutoring", "adaptive", "curriculum", "quiz"],
+      "status": "active"
+    },
+    {
+      "id": "D08.02",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Institutional Certification & Badges",
+      "parentId": "D08",
+      "domainId": "D08",
+      "path": [
+        { "id": "D08", "name": "EdTech & Learning Networks", "layer": 1, "type": "DOMAIN" },
+        { "id": "D08.02", "name": "Institutional Certification & Badges", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Verifiable digital credentials, OpenBadges standard, proctored testing, and university transcripts.",
+      "keywords": ["certification", "credentials", "badges", "degrees", "proctoring"],
+      "status": "active"
+    },
+    {
+      "id": "D08.03",
+      "type": "SUBDOMAIN",
+      "layer": 2,
+      "name": "Interactive Simulation & Cohort Labs",
+      "parentId": "D08",
+      "domainId": "D08",
+      "path": [
+        { "id": "D08", "name": "EdTech & Learning Networks", "layer": 1, "type": "DOMAIN" },
+        { "id": "D08.03", "name": "Interactive Simulation & Cohort Labs", "layer": 2, "type": "SUBDOMAIN" }
+      ],
+      "description": "Virtual laboratory sandboxes, live code pair programming, and peer cohort review rooms.",
+      "keywords": ["simulation", "lab", "coding sandbox", "cohort", "virtual classroom"],
+      "status": "active"
     }
   ],
   "capabilities": [
@@ -305,7 +590,7 @@
         { "id": "D06.01.01", "name": "Event & Media Services", "layer": 3, "type": "CAPABILITY" }
       ],
       "description": "Event management, venue reservations, catering bookings, photography/videography, and stage production.",
-      "keywords": ["event booking", "event management", "venue", "catering", "photography", "decoration", "media"],
+      "keywords": ["event booking", "event services", "event management", "venue", "catering", "photography", "decoration", "media"],
       "status": "active"
     },
     {

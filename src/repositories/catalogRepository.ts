@@ -83,14 +83,92 @@ export class JsonCapabilityCatalogRepository implements ICapabilityCatalogReposi
       ...this.data.solutions,
     ];
 
-    return allItems.filter((item) => {
-      const matchName = item.name.toLowerCase().includes(q);
-      const matchDesc = item.description?.toLowerCase().includes(q);
-      const matchKeywords = item.keywords?.some((k) => k.toLowerCase().includes(q));
-      const matchAliases = item.aliases?.some((a) => a.toLowerCase().includes(q));
-      const matchId = item.id.toLowerCase().includes(q);
-      return matchName || matchDesc || matchKeywords || matchAliases || matchId;
-    });
+    const tokens = q.split(/\s+/).filter(Boolean);
+
+    const scoredItems: Array<{ item: CatalogItem; score: number }> = [];
+
+    for (const item of allItems) {
+      let score = 0;
+      const idLower = item.id.toLowerCase();
+      const nameLower = item.name.toLowerCase();
+      const descLower = (item.description || '').toLowerCase();
+      const keywords = (item.keywords || []).map((k) => k.toLowerCase());
+      const aliases = (item.aliases || []).map((a) => a.toLowerCase());
+      const platforms = ((item as SolutionItem).platformOptions || []).map((p) => p.toLowerCase());
+      const pathNames = (item.path || []).map((p) => p.name.toLowerCase());
+
+      // 1. Exact ID match
+      if (idLower === q) {
+        score += 100;
+      } else if (idLower.includes(q)) {
+        score += 40;
+      }
+
+      // 2. Exact phrase matches in Name, Keywords, Aliases, Platforms
+      if (nameLower === q) {
+        score += 80;
+      } else if (nameLower.includes(q)) {
+        score += 50;
+      }
+
+      if (keywords.includes(q)) {
+        score += 60;
+      } else if (keywords.some((k) => k.includes(q))) {
+        score += 35;
+      }
+
+      if (aliases.includes(q)) {
+        score += 60;
+      } else if (aliases.some((a) => a.includes(q))) {
+        score += 35;
+      }
+
+      if (platforms.includes(q)) {
+        score += 55;
+      } else if (platforms.some((p) => p.includes(q))) {
+        score += 30;
+      }
+
+      if (descLower.includes(q)) {
+        score += 20;
+      }
+
+      // 3. Multi-token coverage across all attributes
+      if (tokens.length > 1) {
+        let allTokensMatched = true;
+        let tokenMatchCount = 0;
+
+        for (const token of tokens) {
+          const inName = nameLower.includes(token);
+          const inDesc = descLower.includes(token);
+          const inKeywords = keywords.some((k) => k.includes(token));
+          const inAliases = aliases.some((a) => a.includes(token));
+          const inPlatforms = platforms.some((p) => p.includes(token));
+          const inPath = pathNames.some((pn) => pn.includes(token));
+
+          if (inName || inDesc || inKeywords || inAliases || inPlatforms || inPath) {
+            tokenMatchCount++;
+          } else {
+            allTokensMatched = false;
+          }
+        }
+
+        if (allTokensMatched) {
+          score += 45 + tokenMatchCount * 5;
+        } else if (tokenMatchCount > 0) {
+          score += tokenMatchCount * 8;
+        }
+      }
+
+      if (score > 0) {
+        // Boost deeper specific layers slightly if query is specific
+        if (item.layer === 5 && score >= 30) score += 5;
+        scoredItems.push({ item, score });
+      }
+    }
+
+    scoredItems.sort((a, b) => b.score - a.score);
+    return scoredItems.map((s) => s.item);
   }
 }
 

@@ -65,6 +65,7 @@ class IntentService implements IIntentService {
       domainId: null,
       subdomainId: null,
       capabilityId: null,
+      solutionBundleId: null,
       solutionId: null,
       serviceId: null,
       providerId: null,
@@ -74,57 +75,51 @@ class IntentService implements IIntentService {
 
     if (!q) return parsed;
 
-    // 1. Check direct catalog match
-    const catalogItem = await catalogRepository.getItemById(q);
-    if (catalogItem) {
-      parsed.domainId = catalogItem.domainId;
-      parsed.path = catalogItem.path;
-      if (catalogItem.layer === 1) {
-        parsed.intentType = 'domain';
-      } else if (catalogItem.layer === 2) {
-        parsed.subdomainId = catalogItem.id;
-        parsed.intentType = 'subdomain';
-      } else if (catalogItem.layer === 3) {
-        parsed.capabilityId = catalogItem.id;
-        parsed.intentType = 'capability';
-      } else if (catalogItem.layer === 5) {
-        parsed.solutionId = catalogItem.id;
-        parsed.intentType = 'solution';
-      }
-      parsed.category = catalogItem.name;
-    } else {
-      // Check search items
+    // 1. Check direct catalog match or search match
+    let catalogItem = await catalogRepository.getItemById(q);
+    if (!catalogItem) {
       const matches = await catalogRepository.searchItems(q);
       if (matches.length > 0) {
-        const top = matches[0];
-        parsed.domainId = top.domainId;
-        parsed.path = top.path;
-        if (top.layer === 5) parsed.solutionId = top.id;
-        if (top.layer === 3) parsed.capabilityId = top.id;
-        parsed.category = top.name;
+        catalogItem = matches[0];
       }
     }
 
-    // 2. Keyword Heuristics for natural language
-    if (q.includes('event') || q.includes('cater') || q.includes('venue') || q.includes('wedding')) {
-      parsed.domainId = parsed.domainId || 'D06';
-      parsed.subdomainId = parsed.subdomainId || 'D06.01';
-      parsed.capabilityId = parsed.capabilityId || 'D06.01.01';
-      parsed.solutionBundleId = parsed.solutionBundleId || 'D06.01.01.01';
-      parsed.category = 'Hyperlocal Event Booking';
-    } else if (q.includes('multivendor') || q.includes('shopify') || q.includes('zoho') || q.includes('magento') || q.includes('opencart')) {
-      parsed.domainId = parsed.domainId || 'D06';
-      parsed.subdomainId = parsed.subdomainId || 'D06.02';
-      parsed.capabilityId = parsed.capabilityId || 'D06.02.15';
-      parsed.solutionBundleId = parsed.solutionBundleId || 'D06.02.15.01';
-      parsed.category = 'Multivendor Marketplace';
-    } else if (q.includes('ai') || q.includes('robot') || q.includes('quantum') || q.includes('automation')) {
-      parsed.domainId = parsed.domainId || 'D04';
-      parsed.category = 'Emerging Tech & Intelligent Systems';
-    } else if (q.includes('local') || q.includes('delivery') || q.includes('courier')) {
-      parsed.domainId = parsed.domainId || 'D06';
-      parsed.subdomainId = 'D06.01';
-      parsed.category = 'Hyperlocal Marketplace';
+    if (catalogItem) {
+      parsed.domainId = catalogItem.domainId || (catalogItem.layer === 1 ? catalogItem.id : catalogItem.path?.[0]?.id || null);
+      parsed.subdomainId = catalogItem.layer === 2 ? catalogItem.id : catalogItem.path?.find((p) => p.layer === 2)?.id || null;
+      parsed.capabilityId = catalogItem.layer === 3 ? catalogItem.id : catalogItem.path?.find((p) => p.layer === 3)?.id || null;
+      parsed.solutionBundleId = catalogItem.layer === 4 ? catalogItem.id : catalogItem.path?.find((p) => p.layer === 4)?.id || null;
+      parsed.solutionId = catalogItem.layer === 5 ? catalogItem.id : null;
+      parsed.path = catalogItem.path;
+      parsed.category = catalogItem.name;
+
+      if (catalogItem.layer === 1) parsed.intentType = 'domain';
+      else if (catalogItem.layer === 2) parsed.intentType = 'subdomain';
+      else if (catalogItem.layer === 3) parsed.intentType = 'capability';
+      else if (catalogItem.layer === 4) parsed.intentType = 'bundle' as any;
+      else if (catalogItem.layer === 5) parsed.intentType = 'solution';
+    } else {
+      // 2. Keyword Heuristics for natural language fallback
+      if (q.includes('event') || q.includes('cater') || q.includes('venue') || q.includes('wedding')) {
+        parsed.domainId = 'D06';
+        parsed.subdomainId = 'D06.01';
+        parsed.capabilityId = 'D06.01.01';
+        parsed.solutionBundleId = 'D06.01.01.01';
+        parsed.category = 'Hyperlocal Event Booking';
+      } else if (q.includes('multivendor') || q.includes('shopify') || q.includes('zoho') || q.includes('magento') || q.includes('opencart')) {
+        parsed.domainId = 'D06';
+        parsed.subdomainId = 'D06.02';
+        parsed.capabilityId = 'D06.02.15';
+        parsed.solutionBundleId = 'D06.02.15.01';
+        parsed.category = 'Multivendor Marketplace';
+      } else if (q.includes('ai') || q.includes('robot') || q.includes('quantum') || q.includes('automation')) {
+        parsed.domainId = 'D04';
+        parsed.category = 'Emerging Tech & Intelligent Systems';
+      } else if (q.includes('local') || q.includes('delivery') || q.includes('courier')) {
+        parsed.domainId = 'D06';
+        parsed.subdomainId = 'D06.01';
+        parsed.category = 'Hyperlocal Marketplace';
+      }
     }
 
     return parsed;
@@ -174,9 +169,12 @@ class IntentService implements IIntentService {
         badge,
         meta: {
           layer: item.layer,
+          parentId: item.parentId,
+          domainId: item.domainId,
           path: item.path,
-          platformOptions: item.platformOptions,
-          relatedCapabilities: item.relatedCapabilities,
+          rawName: item.name,
+          platformOptions: (item as any).platformOptions,
+          relatedCapabilities: (item as any).relatedCapabilities,
         },
       });
     });

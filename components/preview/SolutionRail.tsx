@@ -47,7 +47,7 @@ export const SolutionRail: React.FC<SolutionRailProps> = ({
   onSelectDomain,
   onSelectSolution,
 }) => {
-  const { getDomainName, getDomainDesc, t } = useArchitectAny();
+  const { intent, setIntent, getDomainName, getDomainDesc, t } = useArchitectAny();
 
   // 5-Layer Drill-Down State
   const [activeLayer, setActiveLayer] = useState<1 | 2 | 3 | 4 | 5>(1);
@@ -62,14 +62,18 @@ export const SolutionRail: React.FC<SolutionRailProps> = ({
   const [catalogBundles, setCatalogBundles] = useState<SolutionBundleItem[]>([]);
   const [catalogSolutions, setCatalogSolutions] = useState<SolutionItem[]>([]);
 
-  // Reset drill-down when domain changes
+  // Reset drill-down when domain changes (if not guided by intent)
   useEffect(() => {
     if (!selectedDomain) return;
-    setActiveLayer(1);
-    setSelectedSubdomain(null);
-    setSelectedCapability(null);
-    setSelectedBundle(null);
-    setSelectedPlatform('ALL');
+    
+    // If intent belongs to a different domain, clear drilldown
+    if (intent.domainId && intent.domainId !== selectedDomain.id) {
+      setActiveLayer(1);
+      setSelectedSubdomain(null);
+      setSelectedCapability(null);
+      setSelectedBundle(null);
+      setSelectedPlatform('ALL');
+    }
 
     // Load subdomains & solutions for domain
     catalogRepository.getSubdomains(selectedDomain.id).then((subs) => {
@@ -79,6 +83,38 @@ export const SolutionRail: React.FC<SolutionRailProps> = ({
       setCatalogSolutions(sols);
     });
   }, [selectedDomain?.id]);
+
+  // Synchronize 5-layer drill-down state from global intent (e.g. from Search or external intent triggers)
+  useEffect(() => {
+    if (!selectedDomain) return;
+
+    if (intent.subdomainId) {
+      catalogRepository.getItemById(intent.subdomainId).then((sub) => {
+        if (sub && (sub.domainId === selectedDomain.id || sub.parentId === selectedDomain.id)) {
+          setSelectedSubdomain(sub as SubdomainItem);
+          setActiveLayer(2);
+
+          if (intent.capabilityId) {
+            catalogRepository.getItemById(intent.capabilityId).then((cap) => {
+              if (cap) {
+                setSelectedCapability(cap as CapabilityItem);
+                setActiveLayer(3);
+
+                if (intent.solutionBundleId) {
+                  catalogRepository.getItemById(intent.solutionBundleId).then((bun) => {
+                    if (bun) {
+                      setSelectedBundle(bun as SolutionBundleItem);
+                      setActiveLayer(4);
+                    }
+                  });
+                }
+              }
+            });
+          }
+        }
+      });
+    }
+  }, [intent.subdomainId, intent.capabilityId, intent.solutionBundleId, selectedDomain?.id]);
 
   // Load capabilities when subdomain is selected
   useEffect(() => {
@@ -128,29 +164,35 @@ export const SolutionRail: React.FC<SolutionRailProps> = ({
     setSelectedCapability(null);
     setSelectedBundle(null);
     setActiveLayer(2);
+    setIntent({ subdomainId: sub.id, capabilityId: null, solutionBundleId: null });
   };
 
   const handleSelectCapability = (cap: CapabilityItem) => {
     setSelectedCapability(cap);
     setSelectedBundle(null);
     setActiveLayer(3);
+    setIntent({ capabilityId: cap.id, solutionBundleId: null });
   };
 
   const handleSelectBundle = (bundle: SolutionBundleItem) => {
     setSelectedBundle(bundle);
     setActiveLayer(4);
+    setIntent({ solutionBundleId: bundle.id });
   };
 
   const handleStepUp = () => {
     if (activeLayer === 4) {
       setSelectedBundle(null);
       setActiveLayer(3);
+      setIntent({ solutionBundleId: null });
     } else if (activeLayer === 3) {
       setSelectedCapability(null);
       setActiveLayer(2);
+      setIntent({ capabilityId: null, solutionBundleId: null });
     } else if (activeLayer === 2) {
       setSelectedSubdomain(null);
       setActiveLayer(1);
+      setIntent({ subdomainId: null, capabilityId: null, solutionBundleId: null });
     }
   };
 
@@ -159,6 +201,7 @@ export const SolutionRail: React.FC<SolutionRailProps> = ({
     setSelectedCapability(null);
     setSelectedBundle(null);
     setActiveLayer(1);
+    setIntent({ subdomainId: null, capabilityId: null, solutionBundleId: null });
   };
 
   // Filter solutions by selected platform adapter

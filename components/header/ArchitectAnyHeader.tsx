@@ -26,7 +26,7 @@ export const ArchitectAnyHeader: React.FC<ArchitectAnyHeaderProps> = ({
   className = '',
 }) => {
   const handleSelectSearchResult = (result: SearchResultItem) => {
-    if (result.type === 'solution' && onSelectSolution) {
+    if ((result.type === 'solution' || result.meta?.layer === 5) && onSelectSolution) {
       onSelectSolution(result.id);
     }
   };

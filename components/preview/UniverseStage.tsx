@@ -4,6 +4,7 @@ import subdomainsData from '@/data/universe/subdomains.json';
 import capabilitiesData from '@/data/universe/solution-capabilities.json';
 import solutionsData from '@/data/universe/solutions.json';
 import { Domain, Subdomain, SolutionCapability, Solution } from '@/src/types';
+import { useArchitectAny } from '@/src/context/ArchitectAnyContext';
 import { UniversePlane } from './UniversePlane';
 import { DomainNode } from './DomainNode';
 import { IntentCore, ArchitectAnyLogo } from './IntentCore';
@@ -19,11 +20,12 @@ export interface UniverseStageProps {
 }
 
 export const UniverseStage: React.FC<UniverseStageProps> = ({
-  initialDomainId = 'D01',
+  initialDomainId = 'D06',
   onDomainSelect,
   onSelectSolution,
   searchQuery = '',
 }) => {
+  const { intent, setIntent } = useArchitectAny();
   const allDomains: Domain[] = (domainsData as unknown as Domain[]) || [];
   const subdomains: Subdomain[] = (subdomainsData as unknown as Subdomain[]) || [];
   const capabilities: SolutionCapability[] = (capabilitiesData as unknown as SolutionCapability[]) || [];
@@ -43,8 +45,19 @@ export const UniverseStage: React.FC<UniverseStageProps> = ({
 
   // Selected & Hovered State
   const [selectedDomain, setSelectedDomain] = useState<Domain | null>(() => {
-    return domains.find((d) => d.id === initialDomainId) || domains[0] || null;
+    const targetId = intent.domainId || initialDomainId;
+    return allDomains.find((d) => d.id === targetId) || allDomains[0] || null;
   });
+
+  // Synchronize domain when intent changes externally (e.g. from Global Search)
+  useEffect(() => {
+    if (intent.domainId && selectedDomain?.id !== intent.domainId) {
+      const match = allDomains.find((d) => d.id === intent.domainId);
+      if (match) {
+        setSelectedDomain(match);
+      }
+    }
+  }, [intent.domainId, allDomains]);
   const [hoveredDomain, setHoveredDomain] = useState<Domain | null>(null);
   const solutionRailRef = useRef<HTMLDivElement>(null);
 
@@ -83,6 +96,19 @@ export const UniverseStage: React.FC<UniverseStageProps> = ({
 
   const handleSelectDomain = (domain: Domain, shouldScroll: boolean = true) => {
     setSelectedDomain(domain);
+    setIntent({
+      query: '',
+      rawQuery: '',
+      domainId: domain.id,
+      subdomainId: null,
+      capabilityId: null,
+      solutionBundleId: null,
+      solutionId: null,
+      serviceId: null,
+      providerId: null,
+      category: domain.name,
+      path: [{ id: domain.id, name: domain.name, layer: 1 }],
+    });
     onDomainSelect?.(domain);
 
     if (shouldScroll) {

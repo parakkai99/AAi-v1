@@ -97,13 +97,26 @@ export const IntentSearch: React.FC<IntentSearchProps> = ({
   };
 
   const handleSelectResult = (res: SearchResultItem) => {
+    const layer = res.meta?.layer;
+    const path = res.meta?.path || [];
+
+    // Extract exact 5-layer hierarchy IDs
+    const domainId = res.domainId || (layer === 1 ? res.id : path.find((p: any) => p.layer === 1)?.id || null);
+    const subdomainId = layer === 2 ? res.id : path.find((p: any) => p.layer === 2)?.id || null;
+    const capabilityId = layer === 3 ? res.id : path.find((p: any) => p.layer === 3)?.id || null;
+    const solutionBundleId = layer === 4 ? res.id : path.find((p: any) => p.layer === 4)?.id || null;
+    const solutionId = (res.type === 'solution' || layer === 5) ? res.id : null;
+
     setIntent({
-      query: res.name,
-      domainId: res.domainId || null,
-      solutionId: res.type === 'solution' ? res.id : null,
+      query: res.meta?.rawName || res.name,
+      domainId,
+      subdomainId,
+      capabilityId,
+      solutionBundleId,
+      solutionId,
       serviceId: res.type === 'service' ? res.id : null,
-      capabilityId: res.type === 'capability' ? res.id : null,
       category: res.category || null,
+      path: path.length > 0 ? path : undefined,
     });
     setIsOpen(false);
     onSelectResult?.(res);
