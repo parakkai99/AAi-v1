@@ -62,12 +62,18 @@ export const SolutionRail: React.FC<SolutionRailProps> = ({
   const [catalogBundles, setCatalogBundles] = useState<SolutionBundleItem[]>([]);
   const [catalogSolutions, setCatalogSolutions] = useState<SolutionItem[]>([]);
 
-  // Reset drill-down when domain changes (if not guided by intent)
+  // Reset drill-down when domain changes (if not guided by a matching intent)
   useEffect(() => {
     if (!selectedDomain) return;
     
-    // If intent belongs to a different domain, clear drilldown
-    if (intent.domainId && intent.domainId !== selectedDomain.id) {
+    // Check if the current drill-down belongs to this domain or if intent is explicitly targeting a child of this domain
+    const intentMatchesThisDomain = intent.domainId === selectedDomain.id && Boolean(intent.subdomainId);
+    const currentSubdomainMatches = Boolean(
+      selectedSubdomain &&
+      (selectedSubdomain.domainId === selectedDomain.id || selectedSubdomain.parentId === selectedDomain.id)
+    );
+
+    if (!intentMatchesThisDomain && !currentSubdomainMatches) {
       setActiveLayer(1);
       setSelectedSubdomain(null);
       setSelectedCapability(null);
@@ -96,13 +102,13 @@ export const SolutionRail: React.FC<SolutionRailProps> = ({
 
           if (intent.capabilityId) {
             catalogRepository.getItemById(intent.capabilityId).then((cap) => {
-              if (cap) {
+              if (cap && (cap.domainId === selectedDomain.id || cap.parentId === sub.id)) {
                 setSelectedCapability(cap as CapabilityItem);
                 setActiveLayer(3);
 
                 if (intent.solutionBundleId) {
                   catalogRepository.getItemById(intent.solutionBundleId).then((bun) => {
-                    if (bun) {
+                    if (bun && (bun.domainId === selectedDomain.id || bun.parentId === cap.id)) {
                       setSelectedBundle(bun as SolutionBundleItem);
                       setActiveLayer(4);
                     }
@@ -164,35 +170,84 @@ export const SolutionRail: React.FC<SolutionRailProps> = ({
     setSelectedCapability(null);
     setSelectedBundle(null);
     setActiveLayer(2);
-    setIntent({ subdomainId: sub.id, capabilityId: null, solutionBundleId: null });
+    setIntent({
+      subdomainId: sub.id,
+      capabilityId: null,
+      solutionBundleId: null,
+      solutionId: null,
+      path: [
+        { id: selectedDomain.id, name: selectedDomain.name, layer: 1 },
+        { id: sub.id, name: sub.name, layer: 2 },
+      ],
+    });
   };
 
   const handleSelectCapability = (cap: CapabilityItem) => {
     setSelectedCapability(cap);
     setSelectedBundle(null);
     setActiveLayer(3);
-    setIntent({ capabilityId: cap.id, solutionBundleId: null });
+    setIntent({
+      capabilityId: cap.id,
+      solutionBundleId: null,
+      solutionId: null,
+      path: [
+        { id: selectedDomain.id, name: selectedDomain.name, layer: 1 },
+        { id: selectedSubdomain?.id || '', name: selectedSubdomain?.name || '', layer: 2 },
+        { id: cap.id, name: cap.name, layer: 3 },
+      ],
+    });
   };
 
   const handleSelectBundle = (bundle: SolutionBundleItem) => {
     setSelectedBundle(bundle);
     setActiveLayer(4);
-    setIntent({ solutionBundleId: bundle.id });
+    setIntent({
+      solutionBundleId: bundle.id,
+      solutionId: null,
+      path: [
+        { id: selectedDomain.id, name: selectedDomain.name, layer: 1 },
+        { id: selectedSubdomain?.id || '', name: selectedSubdomain?.name || '', layer: 2 },
+        { id: selectedCapability?.id || '', name: selectedCapability?.name || '', layer: 3 },
+        { id: bundle.id, name: bundle.name, layer: 4 },
+      ],
+    });
   };
 
   const handleStepUp = () => {
     if (activeLayer === 4) {
       setSelectedBundle(null);
       setActiveLayer(3);
-      setIntent({ solutionBundleId: null });
+      setIntent({
+        solutionBundleId: null,
+        solutionId: null,
+        path: [
+          { id: selectedDomain.id, name: selectedDomain.name, layer: 1 },
+          { id: selectedSubdomain?.id || '', name: selectedSubdomain?.name || '', layer: 2 },
+          { id: selectedCapability?.id || '', name: selectedCapability?.name || '', layer: 3 },
+        ],
+      });
     } else if (activeLayer === 3) {
       setSelectedCapability(null);
       setActiveLayer(2);
-      setIntent({ capabilityId: null, solutionBundleId: null });
+      setIntent({
+        capabilityId: null,
+        solutionBundleId: null,
+        solutionId: null,
+        path: [
+          { id: selectedDomain.id, name: selectedDomain.name, layer: 1 },
+          { id: selectedSubdomain?.id || '', name: selectedSubdomain?.name || '', layer: 2 },
+        ],
+      });
     } else if (activeLayer === 2) {
       setSelectedSubdomain(null);
       setActiveLayer(1);
-      setIntent({ subdomainId: null, capabilityId: null, solutionBundleId: null });
+      setIntent({
+        subdomainId: null,
+        capabilityId: null,
+        solutionBundleId: null,
+        solutionId: null,
+        path: [{ id: selectedDomain.id, name: selectedDomain.name, layer: 1 }],
+      });
     }
   };
 
@@ -201,7 +256,13 @@ export const SolutionRail: React.FC<SolutionRailProps> = ({
     setSelectedCapability(null);
     setSelectedBundle(null);
     setActiveLayer(1);
-    setIntent({ subdomainId: null, capabilityId: null, solutionBundleId: null });
+    setIntent({
+      subdomainId: null,
+      capabilityId: null,
+      solutionBundleId: null,
+      solutionId: null,
+      path: [{ id: selectedDomain.id, name: selectedDomain.name, layer: 1 }],
+    });
   };
 
   // Filter solutions by selected platform adapter
@@ -304,6 +365,16 @@ export const SolutionRail: React.FC<SolutionRailProps> = ({
                     setSelectedCapability(null);
                     setSelectedBundle(null);
                     setActiveLayer(2);
+                    setIntent({
+                      subdomainId: selectedSubdomain.id,
+                      capabilityId: null,
+                      solutionBundleId: null,
+                      solutionId: null,
+                      path: [
+                        { id: selectedDomain.id, name: selectedDomain.name, layer: 1 },
+                        { id: selectedSubdomain.id, name: selectedSubdomain.name, layer: 2 },
+                      ],
+                    });
                   }}
                   className={`px-2 py-0.5 rounded-md transition-all cursor-pointer font-bold ${
                     activeLayer === 2
@@ -324,6 +395,16 @@ export const SolutionRail: React.FC<SolutionRailProps> = ({
                   onClick={() => {
                     setSelectedBundle(null);
                     setActiveLayer(3);
+                    setIntent({
+                      capabilityId: selectedCapability.id,
+                      solutionBundleId: null,
+                      solutionId: null,
+                      path: [
+                        { id: selectedDomain.id, name: selectedDomain.name, layer: 1 },
+                        { id: selectedSubdomain?.id || '', name: selectedSubdomain?.name || '', layer: 2 },
+                        { id: selectedCapability.id, name: selectedCapability.name, layer: 3 },
+                      ],
+                    });
                   }}
                   className={`px-2 py-0.5 rounded-md transition-all cursor-pointer font-bold ${
                     activeLayer === 3
@@ -341,7 +422,19 @@ export const SolutionRail: React.FC<SolutionRailProps> = ({
               <>
                 <ChevronRight className="w-3.5 h-3.5 text-[#55798c]" />
                 <button
-                  onClick={() => setActiveLayer(4)}
+                  onClick={() => {
+                    setActiveLayer(4);
+                    setIntent({
+                      solutionBundleId: selectedBundle.id,
+                      solutionId: null,
+                      path: [
+                        { id: selectedDomain.id, name: selectedDomain.name, layer: 1 },
+                        { id: selectedSubdomain?.id || '', name: selectedSubdomain?.name || '', layer: 2 },
+                        { id: selectedCapability?.id || '', name: selectedCapability?.name || '', layer: 3 },
+                        { id: selectedBundle.id, name: selectedBundle.name, layer: 4 },
+                      ],
+                    });
+                  }}
                   className={`px-2 py-0.5 rounded-md transition-all cursor-pointer font-bold ${
                     activeLayer === 4
                       ? 'bg-[#00dfff] text-[#020914] shadow-[0_0_10px_rgba(0,227,253,0.3)]'
